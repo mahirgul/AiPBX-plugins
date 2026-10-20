@@ -1,79 +1,87 @@
-# AiPBX Plugins
+# AiPBX Plugins Catalog
 
 Official and Community Plugins catalog for [AiPBX](https://github.com/mahirgul/AiPBX) — the open-source, AI-powered enterprise IP PBX.
 
 ---
 
-## 📦 Available Plugins
+## 🏛️ Official Core Plugins (`plugins/official/`)
 
-| Plugin | Slug | Category | Description | Author / Credits |
-| :--- | :--- | :--- | :--- | :--- |
-| **AI Assistant** | `ai-assistant` | `ai` | Natural language PBX dialplan assistant & query tool (`/assistant`). | [shido6](https://github.com/shido6) |
-| **SIP Signaling Capture** | `signaling-capture` | `telemetry` | HEPv3 packet capture daemon and Homer / HEP telemetry integration. | [shido6](https://github.com/shido6) |
+Maintained directly by the **AiPBX Core Team**:
+
+| Plugin | Slug | Category | Description |
+| :--- | :--- | :--- | :--- |
+| **Cloud AI & Speech** | `ai-cloud` | `ai` | Cloud LLM/STT/TTS connectors (OpenAI, Gemini, Groq, NVIDIA NIM, Qwen). |
+| **Local AI Models** | `ai-models` | `ai` | Offline on-device voice models (Vosk STT, Piper TTS, Kokoro, Whisper). |
+| **Local AI TTS** | `ai-tts` | `ai` | Offline neural Text-To-Speech engine with dynamic voice synthesis. |
+| **Voicemail AI Transcribe** | `ai-voicemail` | `ai` | Automated speech-to-text voicemail transcription & summarization. |
+| **Interactive AI Apps** | `ai-apps` | `ai` | Voice requests, speech switchboards, and interactive IVR bots. |
+| **Predictive Auto-Dialer** | `auto-dialer` | `callcenter` | Outbound call center campaigns with AMD (Answering Machine Detection). |
+| **Website Voice Widgets** | `web-widgets` | `integration` | Click-to-call & WebRTC web widgets with daily rate limiting. |
+| **Google SSO Sign-In** | `google-auth` | `integration` | Google OAuth2 and One-Tap Single Sign-On for portal and mobile apps. |
+| **Microsoft Teams Direct Routing**| `ms-teams` | `integration` | Direct Routing SIP trunking between Asterisk and Microsoft Teams. |
 
 ---
 
-## 🛠️ Plugin Architecture
+## 🌐 Community & External Plugins (`plugins/community/`)
 
-AiPBX plugins extend the core phone system without touching core Asterisk dialplans or core routing tables.
+Developed and contributed by third-party and community developers:
 
-Each plugin is organized in a self-contained folder:
+| Plugin | Slug | Category | Author | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **AI Assistant** | `ai-assistant` | `ai` | [@shido6](https://github.com/shido6) | Natural language PBX dialplan assistant & query tool (`/assistant`). |
+| **SIP Signaling Capture** | `signaling-capture` | `telemetry` | [@shido6](https://github.com/shido6) | HEPv3 packet capture daemon and Homer / HEP telemetry integration. |
 
-```
-plugin-name/
-├── plugin.json        # Metadata, permission scopes, hooks and settings schema
-├── README.md          # Plugin installation and usage instructions
-├── admin/             # Portal admin UI panels (optional)
-├── events/            # Webhook & internal event handlers (call.started, call.ended, etc.)
-└── sync/              # Dialplan / Asterisk config generation hooks
-```
+---
 
-### `plugin.json` Specification
+## 🛠️ Plugin Specification (`plugin.json`)
+
+All plugins require a root `plugin.json` following this standard schema:
 
 ```json
 {
     "slug": "sample-plugin",
     "name": "Sample Plugin",
     "version": "1.0.0",
-    "author": "Developer Name",
-    "category": "telemetry",
+    "type": "official",
+    "author": "Developer or Team Name",
+    "author_url": "https://github.com/username",
+    "category": "integration",
     "scopes": ["calls:read", "system:read"],
     "hooks": {
-        "sync_domain": "general_dialplan",
-        "events": ["call.started", "call.ended"],
         "admin_page": {
             "group": "integrations"
         }
     },
-    "settings_schema": [...]
+    "settings_schema": []
 }
 ```
+
+### Plugin Types:
+- `"type": "official"`: Verified plugins maintained by the AiPBX core team.
+- `"type": "community"`: Independent community/third-party plugins.
 
 ---
 
 ## 🚀 How to Install a Plugin in AiPBX
 
-1. Copy the plugin folder into `/opt/aipbx/plugins/`:
+1. Copy the plugin directory into your AiPBX installation:
    ```bash
-   cp -r plugins/my-plugin /opt/aipbx/plugins/
+   # For official plugins
+   cp -r plugins/official/web-widgets /opt/aipbx/plugins/
+   
+   # For community plugins
+   cp -r plugins/community/ai-assistant /opt/aipbx/plugins/
    ```
 2. Open the AiPBX Web Portal:
    - Navigate to **Integrations → Plugins**.
    - Locate the plugin and click **Enable**.
-   - Configure any required settings in the plugin settings modal.
+   - Configure credentials or options as needed.
 
 ---
 
-## 🤝 Contributing Plugins
+## 🤝 Contributing New Plugins
 
-We welcome community contributions! To submit a new plugin:
-
-1. Fork this repository.
-2. Create a new directory under `plugins/<your-plugin-slug>/`.
-3. Ensure a valid `plugin.json` and `README.md` are included.
-4. Open a Pull Request against `main`.
-
-All plugin authors are recognized in [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
+Community plugins should be submitted under `plugins/community/<slug>/`. See [`CONTRIBUTORS.md`](CONTRIBUTORS.md) for recognized authors.
 
 ---
 

@@ -1,5 +1,9 @@
+# Build output and editor files never belong in a plugin
 __pycache__/
-*.py[cod]
-*$py.class
-*.log
+*.pyc
+node_modules/
+vendor/
 .DS_Store
+.idea/
+.vscode/
+*.swp

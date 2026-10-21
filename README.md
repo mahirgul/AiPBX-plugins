@@ -1,90 +1,76 @@
 # AiPBX Plugins Catalog
 
-Official and Community Plugins catalog for [AiPBX](https://github.com/mahirgul/AiPBX) — the open-source, AI-powered enterprise IP PBX.
+Catalog of plugins for [AiPBX](https://github.com/mahirgul/AiPBX) — the open-source, AI-powered enterprise IP PBX —
+and the home of **community plugins**.
+
+- **Official plugins ship with AiPBX itself** (the [`plugins/`](https://github.com/mahirgul/AiPBX/tree/main/plugins)
+  folder of the main repository). They are released and tested together with the PBX, so they are not copied here.
+  Report their bugs and send their fixes to the main repository.
+- **Community plugins live here**, under [`plugins/community/<slug>/`](plugins/community/).
 
 ---
 
-## 🏛️ Official Core Plugins (`plugins/official/`)
+## 🏛️ Bundled plugins (in every AiPBX installation)
 
-Maintained directly by the **AiPBX Core Team**:
+Enable them on **Integrations → Plugins** in the portal.
 
-| Plugin | Slug | Category | Description |
-| :--- | :--- | :--- | :--- |
-| **Cloud AI & Speech** | `ai-cloud` | `ai` | Cloud LLM/STT/TTS connectors (OpenAI, Gemini, Groq, NVIDIA NIM, Qwen). |
-| **Local AI Models** | `ai-models` | `ai` | Offline on-device voice models (Vosk STT, Piper TTS, Kokoro, Whisper). |
-| **Local AI TTS** | `ai-tts` | `ai` | Offline neural Text-To-Speech engine with dynamic voice synthesis. |
-| **Voicemail AI Transcribe** | `ai-voicemail` | `ai` | Automated speech-to-text voicemail transcription & summarization. |
-| **Interactive AI Apps** | `ai-apps` | `ai` | Voice requests, speech switchboards, and interactive IVR bots. |
-| **Predictive Auto-Dialer** | `auto-dialer` | `callcenter` | Outbound call center campaigns with AMD (Answering Machine Detection). |
-| **Website Voice Widgets** | `web-widgets` | `integration` | Click-to-call & WebRTC web widgets with daily rate limiting. |
-| **Google SSO Sign-In** | `google-auth` | `integration` | Google OAuth2 and One-Tap Single Sign-On for portal and mobile apps. |
-| **Microsoft Teams Direct Routing**| `ms-teams` | `integration` | Direct Routing SIP trunking between Asterisk and Microsoft Teams. |
+| Plugin | Slug | Category | Type | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Cloud AI & Speech** | [`ai-cloud`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-cloud) | `ai` | Official | Cloud LLM/STT/TTS connectors (OpenAI, Gemini, Groq, NVIDIA NIM, Qwen). |
+| **Local AI Models** | [`ai-models`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-models) | `ai` | Official | Offline on-device voice models (Vosk STT, Piper TTS, Kokoro, Whisper). |
+| **Local AI TTS** | [`ai-tts`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-tts) | `ai` | Official | Offline neural text-to-speech. |
+| **Voicemail AI Transcribe** | [`ai-voicemail`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-voicemail) | `ai` | Official | Speech-to-text voicemail transcription & summarization. |
+| **Interactive AI Apps** | [`ai-apps`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-apps) | `ai` | Official | Voice requests, speech switchboards and interactive IVR bots. |
+| **Predictive Auto-Dialer** | [`auto-dialer`](https://github.com/mahirgul/AiPBX/tree/main/plugins/auto-dialer) | `callcenter` | Official | Outbound campaigns with answering machine detection (AMD). |
+| **Website Voice Widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | Click-to-call & WebRTC web widgets with daily rate limiting. |
+| **Google SSO Sign-In** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google OAuth2 and One-Tap sign-in for the portal and mobile apps. |
+| **Microsoft Teams Direct Routing** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing SIP trunking between Asterisk and Microsoft Teams. |
+| **AI Assistant** | [`ai-assistant`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-assistant) | `ai` | Community — [@shido6](https://github.com/shido6) | Plain-language PBX dialplan assistant (`/assistant`). |
+| **SIP Signaling Capture** | [`signaling-capture`](https://github.com/mahirgul/AiPBX/tree/main/plugins/signaling-capture) | `telemetry` | Community — [@shido6](https://github.com/shido6) | HEPv3 capture daemon and Homer/HEP integration. |
 
----
-
-## 🌐 Community & External Plugins (`plugins/community/`)
-
-Developed and contributed by third-party and community developers:
+## 🌐 Community plugins (this repository)
 
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **AI Assistant** | `ai-assistant` | `ai` | [@shido6](https://github.com/shido6) | Natural language PBX dialplan assistant & query tool (`/assistant`). |
-| **SIP Signaling Capture** | `signaling-capture` | `telemetry` | [@shido6](https://github.com/shido6) | HEPv3 packet capture daemon and Homer / HEP telemetry integration. |
+| *Yours could be the first one — see [Contributing](#-contributing-a-community-plugin).* | | | | |
 
 ---
 
-## 🛠️ Plugin Specification (`plugin.json`)
+## 🚀 Installing a community plugin
 
-All plugins require a root `plugin.json` following this standard schema:
+1. Download the plugin folder as a `.zip` (with `plugin.json` at the root of the archive).
+2. In the AiPBX portal open **Integrations → Plugins → Upload Custom Plugin (`.zip`)**, upload it and click **Enable**.
 
-```json
-{
-    "slug": "sample-plugin",
-    "name": "Sample Plugin",
-    "version": "1.0.0",
-    "type": "official",
-    "author": "Developer or Team Name",
-    "author_url": "https://github.com/username",
-    "category": "integration",
-    "scopes": ["calls:read", "system:read"],
-    "hooks": {
-        "admin_page": {
-            "group": "integrations"
-        }
-    },
-    "settings_schema": []
-}
-```
+Uploaded plugins are stored in `/var/lib/aipbx/plugins/` and survive updates.
+**Do not copy plugins into `/opt/aipbx`:** that folder is the PBX's own git checkout — any change there makes
+`aipbx-update` refuse to update ("Code was modified by hand").
 
-### Plugin Types:
-- `"type": "official"`: Verified plugins maintained by the AiPBX core team.
-- `"type": "community"`: Independent community/third-party plugins.
+AiPBX shows a plugin as **Official** only when it ships with AiPBX; every uploaded plugin is shown as
+**Community**, whatever its `plugin.json` says.
 
 ---
 
-## 🚀 How to Install a Plugin in AiPBX
+## 🛠️ Writing a plugin
 
-1. Copy the plugin directory into your AiPBX installation:
-   ```bash
-   # For official plugins
-   cp -r plugins/official/web-widgets /opt/aipbx/plugins/
-   
-   # For community plugins
-   cp -r plugins/community/ai-assistant /opt/aipbx/plugins/
-   ```
-2. Open the AiPBX Web Portal:
-   - Navigate to **Integrations → Plugins**.
-   - Locate the plugin and click **Enable**.
-   - Configure credentials or options as needed.
+The plugin format (`plugin.json`, hooks, `plg_*` database tables, settings, public endpoints, permissions) is
+documented in the main repository: **[docs/plugin-development.md](https://github.com/mahirgul/AiPBX/blob/main/docs/plugin-development.md)**.
 
 ---
 
-## 🤝 Contributing New Plugins
+## 🤝 Contributing a community plugin
 
-Community plugins should be submitted under `plugins/community/<slug>/`. See [`CONTRIBUTORS.md`](CONTRIBUTORS.md) for recognized authors.
+- Add it as `plugins/community/<slug>/` (the folder name is the slug: lowercase letters, digits and `-`).
+- **One plugin per pull request**, and one topic per pull request: a new plugin, or one fix/feature of an
+  existing one. Unrelated changes in the same PR will be asked to be split.
+- Include a `README.md` in the plugin folder: what it does, its settings, and how you tested it on AiPBX.
+- No secrets, API keys or personal data in the code. Do not commit build output (`__pycache__/`, `*.pyc`,
+  `node_modules/`, `vendor/`).
+- Changes to the bundled plugins above go to the [main repository](https://github.com/mahirgul/AiPBX).
+
+Contributors are listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
 ---
 
 ## 📄 License
 
-GPL-3.0 License. See [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE) for details.

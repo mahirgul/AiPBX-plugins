@@ -17,4 +17,4 @@ We thank all the developers and contributors who have built and extended plugins
 
 ---
 
-*To contribute a plugin, please check our [Contribution Guidelines](README.md#contributing-plugins).*
+*To contribute a plugin, please check our [Contribution Guidelines](README.md#-contributing-a-community-plugin).*

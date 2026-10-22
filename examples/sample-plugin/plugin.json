@@ -1,0 +1,80 @@
+{
+    "slug": "sample-plugin",
+    "name": "Sample Plugin",
+    "name_i18n": {
+        "en": "Sample Plugin"
+    },
+    "version": "1.0.0",
+    "author": "AiPBX",
+    "author_url": "https://github.com/mahirgul/AiPBX-plugins",
+    "type": "community",
+    "category": "integration",
+    "icon": "fas fa-puzzle-piece",
+    "icon_style": "color: #6366f1;",
+    "description": "Shows every hook a plugin can use, in a few lines, without touching calls. Copy it to start your own.",
+    "description_i18n": {
+        "en": "Shows every hook a plugin can use, in a few lines, without touching calls. Copy it to start your own."
+    },
+    "tables": [
+        "plg_sample_events"
+    ],
+    "scopes": [],
+    "hooks": {
+        "admin_page": {
+            "group": "integrations"
+        },
+        "events": [
+            "call.ended"
+        ],
+        "worker": true,
+        "public_endpoints": true,
+        "sync_domain": "general_dialplan"
+    },
+    "settings_schema": [
+        {
+            "key": "greeting",
+            "type": "text",
+            "default": "Hello from the sample plugin",
+            "placeholder": "Any text",
+            "label": "Greeting",
+            "help": "Returned by the public endpoint /api/plugins/sample-plugin/ping."
+        },
+        {
+            "key": "tick_seconds",
+            "type": "number",
+            "default": "60",
+            "label": "Worker interval (seconds)",
+            "help": "The worker hook is called every few seconds; the plugin keeps its own clock."
+        },
+        {
+            "key": "record_events",
+            "type": "boolean",
+            "default": "1",
+            "label": "Record call.ended events"
+        },
+        {
+            "key": "colour",
+            "type": "select",
+            "default": "blue",
+            "options": {
+                "blue": "Blue",
+                "green": "Green"
+            },
+            "label": "Badge colour"
+        },
+        {
+            "key": "notes",
+            "type": "textarea",
+            "default": "",
+            "label": "Notes"
+        },
+        {
+            "key": "api_key",
+            "type": "password",
+            "secret": true,
+            "default": "",
+            "label": "Example secret",
+            "help": "Stored encrypted and masked in the form. The sample never sends it anywhere."
+        }
+    ]
+}

@@ -55,6 +55,9 @@ AiPBX shows a plugin as **Official** only when it ships with AiPBX; every upload
 The plugin format (`plugin.json`, hooks, `plg_*` database tables, settings, public endpoints, permissions) is
 documented in the main repository: **[docs/plugin-development.md](https://github.com/mahirgul/AiPBX/blob/main/docs/plugin-development.md)**.
 
+Start from **[examples/sample-plugin](examples/sample-plugin/)**: a plugin that uses every hook in a few lines
+and does not touch calls. Copy it, change the slug and delete what you do not need.
+
 ---
 
 ## 🤝 Contributing a community plugin

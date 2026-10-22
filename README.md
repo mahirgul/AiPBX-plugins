@@ -17,17 +17,17 @@ Enable them on **Integrations → Plugins** in the portal.
 
 | Plugin | Slug | Category | Type | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **Cloud AI & Speech** | [`ai-cloud`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-cloud) | `ai` | Official | Cloud LLM/STT/TTS connectors (OpenAI, Gemini, Groq, NVIDIA NIM, Qwen). |
-| **Local AI Models** | [`ai-models`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-models) | `ai` | Official | Offline on-device voice models (Vosk STT, Piper TTS, Kokoro, Whisper). |
-| **Local AI TTS** | [`ai-tts`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-tts) | `ai` | Official | Offline neural text-to-speech. |
-| **Voicemail AI Transcribe** | [`ai-voicemail`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-voicemail) | `ai` | Official | Speech-to-text voicemail transcription & summarization. |
-| **Interactive AI Apps** | [`ai-apps`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-apps) | `ai` | Official | Voice requests, speech switchboards and interactive IVR bots. |
-| **Predictive Auto-Dialer** | [`auto-dialer`](https://github.com/mahirgul/AiPBX/tree/main/plugins/auto-dialer) | `callcenter` | Official | Outbound campaigns with answering machine detection (AMD). |
-| **Website Voice Widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | Click-to-call & WebRTC web widgets with daily rate limiting. |
-| **Google SSO Sign-In** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google OAuth2 and One-Tap sign-in for the portal and mobile apps. |
-| **Microsoft Teams Direct Routing** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing SIP trunking between Asterisk and Microsoft Teams. |
-| **AI Assistant** | [`ai-assistant`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-assistant) | `ai` | Community — [@shido6](https://github.com/shido6) | Plain-language PBX dialplan assistant (`/assistant`). |
-| **SIP Signaling Capture** | [`signaling-capture`](https://github.com/mahirgul/AiPBX/tree/main/plugins/signaling-capture) | `telemetry` | Community — [@shido6](https://github.com/shido6) | HEPv3 capture daemon and Homer/HEP integration. |
+| **Cloud AI services** | [`ai-cloud`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-cloud) | `ai` | Official | Cloud AI providers in one place: Gemini/Gemma, OpenAI, Azure, Deepgram, ElevenLabs, Amazon Polly, Groq, NVIDIA NIM, Qwen or any OpenAI-compatible service (speech, speech to text, language models). |
+| **Local AI models** | [`ai-models`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-models) | `ai` | Official | AI on the PBX itself, offline: Turkish EMA Lightning and Piper voices, Kokoro English voices, Vosk and Whisper speech recognition. |
+| **Cloud TTS (announcement studio)** | [`ai-tts`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-tts) | `ai` | Official | Text to speech for IVR and queue announcements with cloud or local engines; saves the result as an announcement. |
+| **Voicemail transcription** | [`ai-voicemail`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-voicemail) | `ai` | Official | Transcribes and summarises voicemail messages. |
+| **AI applications** | [`ai-apps`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-apps) | `ai` | Official | AI applications with their own numbers that answer calls, do their job and pass the call on (usable as IVR / route destinations). |
+| **Auto dialer & AMD campaigns** | [`auto-dialer`](https://github.com/mahirgul/AiPBX/tree/main/plugins/auto-dialer) | `integration` | Official | Outbound campaigns with answering machine detection, queue free-agent pacing and voicemail drop. |
+| **Website call widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | "Call us" buttons for websites over WebRTC, callback form, WordPress plugin. |
+| **Sign in with Google** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google Workspace / Gmail sign-in (OAuth 2.0) for the portal and the mobile apps. |
+| **Microsoft Teams** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing: AiPBX as the SBC for Microsoft Teams, plus call webhooks. |
+| **Dialplan editor / AI assistant** | [`ai-assistant`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-assistant) | `ai` | Community — [@shido6](https://github.com/shido6) | Plain-language PBX changes with a preview before they are applied (`/assistant`). |
+| **SIP signaling capture** | [`signaling-capture`](https://github.com/mahirgul/AiPBX/tree/main/plugins/signaling-capture) | `telemetry` | Community — [@shido6](https://github.com/shido6) | HEPv3 capture of SIP and RTCP into the local daemon, or to Homer / an external collector. |
 
 ## 🌐 Community plugins (this repository)
 
@@ -35,12 +35,16 @@ Enable them on **Integrations → Plugins** in the portal.
 | :--- | :--- | :--- | :--- | :--- |
 | *Yours could be the first one — see [Contributing](#-contributing-a-community-plugin).* | | | | |
 
+**Starting a plugin?** [`examples/sample-plugin`](examples/sample-plugin/) uses every hook in a few lines and
+does not touch calls: copy it, change the slug and delete what you do not need.
+
 ---
 
 ## 🚀 Installing a community plugin
 
 1. Download the plugin folder as a `.zip` (with `plugin.json` at the root of the archive).
 2. In the AiPBX portal open **Integrations → Plugins → Upload Custom Plugin (`.zip`)**, upload it and click **Enable**.
+   Uploading needs AiPBX **1.50.3** or newer; older versions fail with *"Failed to move extracted plugin"*.
 
 Uploaded plugins are stored in `/var/lib/aipbx/plugins/` and survive updates.
 **Do not copy plugins into `/opt/aipbx`:** that folder is the PBX's own git checkout — any change there makes

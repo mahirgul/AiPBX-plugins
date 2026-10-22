@@ -13,7 +13,7 @@ We thank all the developers and contributors who have built and extended plugins
 
 | Contributor | GitHub | Contributed Plugins |
 | :--- | :--- | :--- |
-| **Gregory Merriweather** | [@shido6](https://github.com/shido6) | `ai-assistant`, `signaling-capture` |
+| **Gregory Merriweather** | [@shido6](https://github.com/shido6) | `ai-assistant`, `signaling-capture`, `call-quality` |
 
 ---
 

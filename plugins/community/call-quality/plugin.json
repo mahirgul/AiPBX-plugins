@@ -1,0 +1,81 @@
+{
+    "slug": "call-quality",
+    "name": "Call Quality Evidence (RTCP loss, jitter)",
+    "name_i18n": {
+        "tr": "Çağrı Kalitesi Kanıtı (RTCP kaybı, jitter)",
+        "en": "Call Quality Evidence (RTCP loss, jitter)"
+    },
+    "version": "1.0.0",
+    "author": "Gregory Merriweather (shido6)",
+    "author_url": "https://github.com/shido6",
+    "type": "community",
+    "category": "telemetry",
+    "icon": "fas fa-chart-line",
+    "icon_style": "color: #22c55e;",
+    "description": "Score calls from the RTCP reports Asterisk already sends: packet loss, jitter, a per-call evidence trail and an e-mail to the administrator when a trunk is losing media. It never changes a route or a dialplan.",
+    "description_i18n": {
+        "tr": "Asterisk'in zaten gönderdiği RTCP raporlarından çağrıları puanlar: paket kaybı, jitter, çağrı başına kanıt izi ve bir trunk medya kaybediyorsa yöneticiye e-posta. Hiçbir rotayı veya dialplan'ı değiştirmez.",
+        "en": "Score calls from the RTCP reports Asterisk already sends: packet loss, jitter, a per-call evidence trail and an e-mail to the administrator when a trunk is losing media. It never changes a route or a dialplan."
+    },
+    "hooks": {
+        "admin_page": {
+            "group": "integrations"
+        },
+        "worker": true
+    },
+    "tables": ["plg_call_quality_evidence"],
+    "settings_schema": [
+        {
+            "key": "evidence_days",
+            "type": "number",
+            "default": "180",
+            "label": "Evidence retention (days)",
+            "label_i18n": {
+                "tr": "Kanıt saklama süresi (gün)"
+            },
+            "help": "Between 7 and 3650 days. Older evidence is pruned on every pass.",
+            "help_i18n": {
+                "tr": "7 ile 3650 gün arasında. Her geçişte daha eski kanıtlar silinir."
+            }
+        },
+        {
+            "key": "notify_email",
+            "type": "text",
+            "default": "",
+            "label": "E-mail an administrator when a trunk is losing media",
+            "label_i18n": {
+                "tr": "Bir trunk medya kaybediyorsa yöneticiye e-posta gönder"
+            },
+            "help": "Empty means no mail: the plugin page keeps the evidence and nothing leaves the server. Several addresses may be separated by commas.",
+            "help_i18n": {
+                "tr": "Boş bırakılırsa e-posta gönderilmez: eklenti sayfası kanıtı tutar, sunucudan hiçbir şey çıkmaz. Birden fazla adres virgülle ayrılabilir."
+            }
+        },
+        {
+            "key": "alert_cooldown_hours",
+            "type": "number",
+            "default": "6",
+            "label": "Repeat an alert at most once per (hours)",
+            "label_i18n": {
+                "tr": "Bir uyarıyı en sık kaç saatte bir tekrarla"
+            },
+            "help": "Between 1 and 168 hours, per trunk (or per peer for a phone/LAN problem). The evidence is still recorded on every pass; only the mail and the badge are held back.",
+            "help_i18n": {
+                "tr": "1 ile 168 saat arasında, trunk başına (telefon/LAN sorununda eş başına). Kanıt her geçişte kaydedilir; yalnızca e-posta ve rozet ertelenir."
+            }
+        },
+        {
+            "key": "mail_local_peers",
+            "type": "boolean",
+            "default": "0",
+            "label": "E-mail phone and LAN quality problems too",
+            "label_i18n": {
+                "tr": "Telefon ve LAN kalite sorunlarını da e-posta ile bildir"
+            },
+            "help": "Off by default: a bad Wi-Fi phone is a local problem the page already shows, and it can produce many alerts. Trunk problems are always mailed when an address is set.",
+            "help_i18n": {
+                "tr": "Varsayılan olarak kapalı: kötü Wi-Fi telefonu yerel bir sorundur ve sayfada zaten görünür. Adres verildiğinde trunk sorunları her zaman e-postalanır."
+            }
+        }
+    ]
+}

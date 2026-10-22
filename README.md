@@ -32,7 +32,7 @@ Enable them on **Integrations → Plugins** in the portal.
 
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| *Yours could be the first one — see [Contributing](#-contributing-a-community-plugin).* | | | | |
+| **Call Quality Evidence** | [`call-quality`](plugins/community/call-quality) | `telemetry` | [@shido6](https://github.com/shido6) | RTCP packet loss, jitter and per-call evidence, with an alert when a trunk is losing media. Changes nothing on the PBX. |
 
 ---
 

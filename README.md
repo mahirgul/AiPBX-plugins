@@ -3,9 +3,10 @@
 Catalog of plugins for [AiPBX](https://github.com/mahirgul/AiPBX) — the open-source, AI-powered enterprise IP PBX —
 and the home of **community plugins**.
 
-- **Official plugins ship with AiPBX itself** (the [`plugins/`](https://github.com/mahirgul/AiPBX/tree/main/plugins)
-  folder of the main repository). They are released and tested together with the PBX, so they are not copied here.
-  Report their bugs and send their fixes to the main repository.
+- **Bundled plugins ship with AiPBX itself** (the [`plugins/`](https://github.com/mahirgul/AiPBX/tree/main/plugins)
+  folder of the main repository): the official plugins and two community plugins by
+  [@shido6](https://github.com/shido6) (`ai-assistant`, `signaling-capture`). They are released and tested together
+  with the PBX, so they are not copied here. Report their bugs and send their fixes to the main repository.
 - **Community plugins live here**, under [`plugins/community/<slug>/`](plugins/community/).
 
 ---

@@ -5,7 +5,7 @@ and the home of **community plugins**.
 
 - **Bundled plugins ship with AiPBX itself** (the [`plugins/`](https://github.com/mahirgul/AiPBX/tree/main/plugins)
   folder of the main repository): the official plugins and the community plugin `ai-assistant` by
-  [@shido6](https://github.com/shido6) (his signaling capture is part of AiPBX itself since 1.50.8). They are released and tested together
+  [@shido6](https://github.com/shido6) (his signaling capture and call quality are part of AiPBX itself since 1.50.8/1.50.9). They are released and tested together
   with the PBX, so they are not copied here. Report their bugs and send their fixes to the main repository.
 - **Community plugins live here**, under [`plugins/community/<slug>/`](plugins/community/).
 
@@ -32,7 +32,7 @@ Enable them on **Integrations → Plugins** in the portal.
 
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **Call Quality (RTCP)** | [`call-quality`](plugins/community/call-quality/) | `telemetry` | [@shido6](https://github.com/shido6), AiPBX | Packet loss in both directions and jitter per trunk and extension from RTCP; an alert in the portal's bell when audio is lost. Needs AiPBX 1.50.8+ and signaling capture on. |
+| *Yours could be the first one — see [Contributing](#-contributing-a-community-plugin).* | | | | |
 
 **Starting a plugin?** [`examples/sample-plugin`](examples/sample-plugin/) uses every hook in a few lines and
 does not touch calls: copy it, change the slug and delete what you do not need.

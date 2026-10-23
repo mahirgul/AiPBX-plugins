@@ -1,0 +1,56 @@
+{
+    "slug": "call-quality",
+    "name": "Call Quality (RTCP)",
+    "name_i18n": {
+        "tr": "Çağrı Kalitesi (RTCP)",
+        "en": "Call Quality (RTCP)"
+    },
+    "version": "1.0.0",
+    "author": "Gregory Merriweather (shido6), AiPBX",
+    "author_url": "https://github.com/shido6",
+    "type": "community",
+    "category": "telemetry",
+    "icon": "fas fa-chart-line",
+    "icon_style": "color: #22c55e;",
+    "description": "Measures every call leg from the RTCP reports Asterisk already sends: packet loss in both directions and jitter, per trunk and per extension. Tells the administrator in the portal's alert bell when a trunk or a phone is losing audio. Read-only: it never changes a route or the dialplan.",
+    "description_i18n": {
+        "tr": "Asterisk'in zaten gönderdiği RTCP raporlarından her çağrı bacağını ölçer: iki yönde paket kaybı ve jitter, trunk ve dahili başına. Bir trunk ya da telefon ses kaybediyorsa portalin uyarı ziline yazar. Yalnızca okur: yönlendirmeye ve dialplan'e dokunmaz.",
+        "en": "Measures every call leg from the RTCP reports Asterisk already sends: packet loss in both directions and jitter, per trunk and per extension. Tells the administrator in the portal's alert bell when a trunk or a phone is losing audio. Read-only: it never changes a route or the dialplan."
+    },
+    "tables": ["plg_call_quality_legs"],
+    "hooks": {
+        "admin_page": {
+            "group": "integrations"
+        },
+        "worker": true
+    },
+    "settings_schema": [
+        {
+            "key": "poor_loss_pct",
+            "type": "number",
+            "default": "5",
+            "label": "Packet loss that makes a report bad (%)",
+            "label_i18n": { "tr": "Bir raporu kötü sayan paket kaybı (%)" },
+            "help": "1 to 50. A leg is poor when at least two of its reports in one direction reach this loss; 1 % or more makes it fair.",
+            "help_i18n": { "tr": "1 ile 50 arası. Bir yönde en az iki raporu bu kayba ulaşan bacak kötü sayılır; %1 ve üzeri orta." }
+        },
+        {
+            "key": "alert_poor_legs",
+            "type": "number",
+            "default": "3",
+            "label": "Alert when a trunk or extension has this many poor legs in 15 minutes",
+            "label_i18n": { "tr": "Bir trunk ya da dahilide 15 dakikada bu kadar kötü bacak olursa uyar" },
+            "help": "1 to 50, and at least a fifth of its measured legs. The alert closes by itself when the quality is back.",
+            "help_i18n": { "tr": "1 ile 50 arası, ve ölçülen bacaklarının en az beşte biri. Kalite düzelince uyarı kendiliğinden kapanır." }
+        },
+        {
+            "key": "keep_days",
+            "type": "number",
+            "default": "90",
+            "label": "Keep measurements (days)",
+            "label_i18n": { "tr": "Ölçümleri sakla (gün)" },
+            "help": "7 to 3650.",
+            "help_i18n": { "tr": "7 ile 3650 arası." }
+        }
+    ]
+}

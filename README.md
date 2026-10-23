@@ -4,8 +4,8 @@ Catalog of plugins for [AiPBX](https://github.com/mahirgul/AiPBX) — the open-s
 and the home of **community plugins**.
 
 - **Bundled plugins ship with AiPBX itself** (the [`plugins/`](https://github.com/mahirgul/AiPBX/tree/main/plugins)
-  folder of the main repository): the official plugins and two community plugins by
-  [@shido6](https://github.com/shido6) (`ai-assistant`, `signaling-capture`). They are released and tested together
+  folder of the main repository): the official plugins and the community plugin `ai-assistant` by
+  [@shido6](https://github.com/shido6) (his signaling capture is part of AiPBX itself since 1.50.8). They are released and tested together
   with the PBX, so they are not copied here. Report their bugs and send their fixes to the main repository.
 - **Community plugins live here**, under [`plugins/community/<slug>/`](plugins/community/).
 
@@ -27,13 +27,12 @@ Enable them on **Integrations → Plugins** in the portal.
 | **Sign in with Google** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google Workspace / Gmail sign-in (OAuth 2.0) for the portal and the mobile apps. |
 | **Microsoft Teams** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing: AiPBX as the SBC for Microsoft Teams, plus call webhooks. |
 | **Dialplan editor / AI assistant** | [`ai-assistant`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-assistant) | `ai` | Community — [@shido6](https://github.com/shido6) | Plain-language PBX changes with a preview before they are applied (`/assistant`). |
-| **SIP signaling capture** | [`signaling-capture`](https://github.com/mahirgul/AiPBX/tree/main/plugins/signaling-capture) | `telemetry` | Community — [@shido6](https://github.com/shido6) | HEPv3 capture of SIP and RTCP into the local daemon, or to Homer / an external collector. |
 
 ## 🌐 Community plugins (this repository)
 
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| *Yours could be the first one — see [Contributing](#-contributing-a-community-plugin).* | | | | |
+| **Call Quality (RTCP)** | [`call-quality`](plugins/community/call-quality/) | `telemetry` | [@shido6](https://github.com/shido6), AiPBX | Packet loss in both directions and jitter per trunk and extension from RTCP; an alert in the portal's bell when audio is lost. Needs AiPBX 1.50.8+ and signaling capture on. |
 
 **Starting a plugin?** [`examples/sample-plugin`](examples/sample-plugin/) uses every hook in a few lines and
 does not touch calls: copy it, change the slug and delete what you do not need.

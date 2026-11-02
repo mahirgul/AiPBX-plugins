@@ -1,0 +1,22 @@
+{
+    "schema": 1,
+    "name": "Drei SIP Connect",
+    "country": "AT",
+    "docs_url": "https://www.drei.at/media/common/business/sip-connect/sip-connect-lb-07-2025.pdf",
+    "source": "provider documentation",
+    "host": "62.218.251.59",
+    "host_hint": "The unencrypted address in Drei's service description of 07/2025. Drei can change it.",
+    "needs_login": true,
+    "send_e164": false,
+    "notes": "Enter the Authentication User from Drei as user name, and its domain as SIP domain. Drei must first enable your IP address. Drei does not use port 5060, TCP or STUN. Do not let your firewall's SIP helper change SIP messages. The caller ID is read from the From field in international format, such as +43190091234: keep the last digits and prepend the code below if needed. Faxes go over G.711, not T.38. This template is for the registering connection, not for delivery to a fixed IP address.",
+    "tested": null,
+    "trunk": {
+        "transport": "udp",
+        "port": "5083",
+        "outbound_proxy": "sip:62.218.251.59:5083\\;lr",
+        "registration_enabled": "1",
+        "codecs": "alaw,ulaw",
+        "send_pai": "0",
+        "t38_support": "0"
+    }
+}

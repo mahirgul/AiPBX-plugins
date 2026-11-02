@@ -1,0 +1,20 @@
+{
+    "schema": 1,
+    "name": "A1 SIP Trunk",
+    "country": "AT",
+    "docs_url": "https://service-de.enreach.com/hc/en-gb/articles/16339434408476-SIP-Provider-A1-Telekom-AT",
+    "source": "pbx vendor guide",
+    "host": "",
+    "host_hint": "From your A1 customer data sheet. A1 has several connection variants, so agree the setup with A1.",
+    "needs_login": true,
+    "send_e164": false,
+    "notes": "User name, password and addresses are on your A1 customer data sheet. The user name is usually the number with its code, such as +43... Enter the domain from the data sheet as SIP domain. This template is the weakest kind: it comes from another PBX vendor's guide, because A1's own guideline could not be read in full. Faxes go over G.711, not T.38.",
+    "tested": null,
+    "trunk": {
+        "transport": "udp",
+        "registration_enabled": "1",
+        "codecs": "alaw",
+        "dtmf_mode": "rfc4733",
+        "t38_support": "0"
+    }
+}

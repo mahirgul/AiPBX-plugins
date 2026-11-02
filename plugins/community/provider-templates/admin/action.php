@@ -23,6 +23,10 @@ return static function (string $slug, array $settings): array {
     if (!empty($template['needs_login']) && (trim((string) ($_POST['auth_username'] ?? '')) === '' || (string) ($_POST['auth_password'] ?? '') === '')) {
         return ['error' => 'This provider needs a user name and a password.'];
     }
+    $domain = trim((string) ($_POST['from_domain'] ?? ''));
+    if ($domain !== '' && !ProviderTemplates::isHost($domain)) {
+        return ['error' => 'The SIP domain must be a host name.'];
+    }
     $result = TrunkService::saveTrunk(['csrf_token' => $_POST['csrf_token']] + ProviderTemplates::trunkData($template, $_POST));
     return !empty($result['success'])
         ? ['message' => 'The trunk was created. Check it under Trunks, add an outbound route, and press Apply.']

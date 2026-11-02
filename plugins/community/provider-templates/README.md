@@ -26,7 +26,7 @@ that one file. You do not need to write any code.
 | `name` | Provider name |
 | `country` | Two-letter code, or `global` |
 | `docs_url` | The provider's public setup page, `https` |
-| `source` | `provider documentation` or `working installation` |
+| `source` | `provider documentation`, `pbx vendor guide` or `working installation` |
 | `host` | The SIP server if it is the same for everyone, otherwise empty |
 | `host_hint` | Where to find the address if it is different for each customer |
 | `needs_login` | `true` if a user name and password are required |
@@ -35,7 +35,7 @@ that one file. You do not need to write any code.
 | `tested` | `null`, or who tested it with real calls: `by` (GitHub name), `date` (`YYYY-MM`), `aipbx` (version) |
 | `trunk` | The trunk's settings, as text |
 
-Allowed in `trunk`: `transport`, `port`, `codecs`, `dtmf_mode`, `registration_enabled`, `registration_expiration`,
+Allowed in `trunk`: `transport`, `port`, `codecs`, `dtmf_mode`, `outbound_proxy`, `registration_enabled`, `registration_expiration`,
 `qualify_frequency`, `direct_media`, `rtp_symmetric`, `rewrite_contact`, `force_rport`, `timers`, `prack_100rel`,
 `send_pai`, `send_rpid`, `t38_support`, `carrier_strip_prefix`, `carrier_add_prefix`.
 

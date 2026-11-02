@@ -20,6 +20,7 @@ final class ProviderTemplates
         'port' => '/^[1-9][0-9]{0,4}$/D',
         'codecs' => '/^[a-z0-9_]+(,[a-z0-9_]+)*$/D',
         'dtmf_mode' => '/^(rfc4733|inband|info|auto)$/D',
+        'outbound_proxy' => '/^sip:[A-Za-z0-9.-]{1,253}(:[0-9]{1,5})?(\\\\;lr)?$/D',
         'registration_enabled' => self::FLAG,
         'registration_expiration' => '/^[0-9]{2,5}$/D',
         'qualify_frequency' => '/^[0-9]{1,4}$/D',
@@ -64,8 +65,8 @@ final class ProviderTemplates
         if (!is_string($t['docs_url'] ?? null) || !preg_match('#^https://[^\s<>"\']+$#D', $t['docs_url'])) {
             $errors[] = 'docs_url must be an https address';
         }
-        if (!is_string($t['source'] ?? null) || !in_array($t['source'], ['provider documentation', 'working installation'], true)) {
-            $errors[] = 'source must be "provider documentation" or "working installation"';
+        if (!is_string($t['source'] ?? null) || !in_array($t['source'], ['provider documentation', 'pbx vendor guide', 'working installation'], true)) {
+            $errors[] = 'source must be "provider documentation", "pbx vendor guide" or "working installation"';
         }
         $host = $t['host'] ?? '';
         if (!is_string($host) || ($host !== '' && !self::isHost($host))) {
@@ -105,7 +106,7 @@ final class ProviderTemplates
         return $errors;
     }
 
-    private static function isHost(string $host): bool
+    public static function isHost(string $host): bool
     {
         return filter_var($host, FILTER_VALIDATE_IP) !== false
             || preg_match('/^(?=.{1,253}$)([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/D', $host) === 1;
@@ -156,6 +157,10 @@ final class ProviderTemplates
         $data['auth_username'] = trim((string) ($input['auth_username'] ?? ''));
         $data['auth_password'] = (string) ($input['auth_password'] ?? '');
         $data['is_active'] = 1;
+        $domain = trim((string) ($input['from_domain'] ?? ''));
+        if ($domain !== '' && self::isHost($domain)) {
+            $data['from_domain'] = $domain;
+        }
         if (!empty($t['send_e164'])) {
             $data['carrier_e164_country'] = preg_replace('/[^0-9]/', '', (string) ($input['country_code'] ?? ''));
         }

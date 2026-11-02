@@ -30,6 +30,7 @@ $bad = [
     'script in the name' => ['name' => '<script>x</script>'],
     'unknown source' => ['source' => 'a zip I found'],
     'bad tested' => ['tested' => ['by' => 'x']],
+    'proxy with an extra option' => ['trunk' => ['outbound_proxy' => "sip:proxy.example.com\nallow=all"]],
     'number instead of text' => ['trunk' => ['port' => 5060]],
 ];
 foreach ($bad as $what => $over) {

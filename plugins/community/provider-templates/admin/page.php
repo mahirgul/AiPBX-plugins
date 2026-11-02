@@ -70,6 +70,11 @@ uasort($countries, static fn(array $a, array $b): int => strcmp((string) ($a['na
                     <?php if (!empty($template['host_hint'])): ?><small class="u-hint"><?php echo $h($template['host_hint']); ?></small><?php endif; ?>
                 </div>
             </div>
+            <div class="form-group">
+                <label class="form-label">SIP domain (optional)</label>
+                <input type="text" name="from_domain" class="form-control" maxlength="253" value="<?php echo $h($_POST['from_domain'] ?? ''); ?>">
+                <small class="u-hint">Only if your provider gave you a domain for your account.</small>
+            </div>
             <div class="u-grid-2">
                 <div class="form-group">
                     <label class="form-label">User name</label>

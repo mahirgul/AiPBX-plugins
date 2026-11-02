@@ -5,7 +5,7 @@
         "en": "SIP Provider Templates",
         "tr": "SIP Sağlayıcı Şablonları"
     },
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "AiPBX community",
     "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/provider-templates",
     "type": "community",

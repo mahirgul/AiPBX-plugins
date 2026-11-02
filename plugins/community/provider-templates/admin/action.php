@@ -28,6 +28,17 @@ return static function (string $slug, array $settings): array {
         return ['error' => 'The SIP domain must be a host name.'];
     }
     $result = TrunkService::saveTrunk(['csrf_token' => $_POST['csrf_token']] + ProviderTemplates::trunkData($template, $_POST));
+    // Asterisk's Contact says "s" unless told otherwise, and this provider wants the number there.
+    if (!empty($result['success']) && !empty($template['login_is_number']) && class_exists('AdvancedPjsipService')) {
+        $name = trim((string) $_POST['trunk_name']);
+        $number = (string) preg_replace('/[^0-9+]/', '', (string) $_POST['auth_username']);
+        foreach (['registration' => $name . '-reg', 'endpoint' => $name] as $type => $object) {
+            $saved = AdvancedPjsipService::save(['csrf_token' => $_POST['csrf_token'], 'object_type' => $type, 'object_name' => $object, 'options' => "contact_user={$number}", 'note' => 'From the ' . $template['name'] . ' template', 'is_active' => 1]);
+            if (empty($saved['success'])) {
+                return ['error' => 'The trunk was created, but: ' . (string) ($saved['error'] ?? '')];
+            }
+        }
+    }
     return !empty($result['success'])
         ? ['message' => 'The trunk was created. Check it under Trunks, add an outbound route, and press Apply.']
         : ['error' => (string) ($result['error'] ?? 'The trunk could not be saved.')];

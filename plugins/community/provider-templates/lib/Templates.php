@@ -51,7 +51,7 @@ final class ProviderTemplates
             return ['not a JSON object'];
         }
         $errors = [];
-        $allowed = ['schema', 'name', 'country', 'docs_url', 'source', 'host', 'host_hint', 'needs_login', 'send_e164', 'notes', 'tested', 'trunk'];
+        $allowed = ['schema', 'name', 'country', 'docs_url', 'source', 'host', 'host_hint', 'needs_login', 'login_is_number', 'send_e164', 'notes', 'tested', 'trunk'];
         foreach (array_diff(array_keys($t), $allowed) as $unknown) {
             $errors[] = "unknown key: {$unknown}";
         }
@@ -78,6 +78,9 @@ final class ProviderTemplates
             if (isset($t[$text]) && (!is_string($t[$text]) || mb_strlen($t[$text]) > 900)) {
                 $errors[] = "{$text} must be text of at most 900 characters";
             }
+        }
+        if (array_key_exists('login_is_number', $t) && !is_bool($t['login_is_number'])) {
+            $errors[] = 'login_is_number must be true or false';
         }
         foreach (['needs_login', 'send_e164'] as $flag) {
             if (!is_bool($t[$flag] ?? null)) {
@@ -165,6 +168,9 @@ final class ProviderTemplates
         }
         if (!empty($t['send_e164'])) {
             $data['carrier_e164_country'] = preg_replace('/[^0-9]/', '', (string) ($input['country_code'] ?? ''));
+        }
+        if (!empty($t['login_is_number'])) {
+            $data['from_user'] = preg_replace('/[^0-9+]/', '', $data['auth_username']);
         }
         $callerId = (string) preg_replace('/[^0-9+]/', '', (string) ($input['outbound_caller_id'] ?? ''));
         if ($callerId !== '') {

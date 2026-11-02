@@ -30,6 +30,7 @@ that one file. You do not need to write any code.
 | `host` | The SIP server if it is the same for everyone, otherwise empty |
 | `host_hint` | Where to find the address if it is different for each customer |
 | `needs_login` | `true` if a user name and password are required |
+| `login_is_number` | Optional, `true` if the user name is a phone number that must also be the SIP Contact |
 | `send_e164` | `true` if the provider wants `+<country code>...` |
 | `notes` | What the user has to do at the provider first |
 | `tested` | `null`, or who tested it with real calls: `by` (GitHub name), `date` (`YYYY-MM`), `aipbx` (version) |

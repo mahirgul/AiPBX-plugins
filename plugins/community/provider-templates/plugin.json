@@ -1,0 +1,28 @@
+{
+    "slug": "provider-templates",
+    "name": "SIP Provider Templates",
+    "name_i18n": {
+        "en": "SIP Provider Templates",
+        "tr": "SIP Sağlayıcı Şablonları"
+    },
+    "version": "1.0.0",
+    "author": "AiPBX community",
+    "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/provider-templates",
+    "type": "community",
+    "category": "integration",
+    "icon": "fas fa-network-wired",
+    "icon_style": "color: #0ea5e9;",
+    "description": "Create a SIP trunk from a provider template written by the community. Needs AiPBX 1.60.6 or newer.",
+    "description_i18n": {
+        "en": "Create a SIP trunk from a provider template written by the community. Needs AiPBX 1.60.6 or newer.",
+        "tr": "Topluluğun yazdığı sağlayıcı şablonundan SIP trunk oluşturur. AiPBX 1.60.6 veya üstü gerekir."
+    },
+    "tables": [],
+    "scopes": [],
+    "hooks": {
+        "admin_page": {
+            "group": "integrations"
+        }
+    },
+    "settings_schema": []
+}

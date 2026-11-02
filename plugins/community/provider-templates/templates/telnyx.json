@@ -1,0 +1,21 @@
+{
+    "schema": 1,
+    "name": "Telnyx",
+    "country": "global",
+    "docs_url": "https://developers.telnyx.com/docs/voice/sip-trunking/asterisk",
+    "source": "provider documentation",
+    "host": "sip.telnyx.com",
+    "needs_login": true,
+    "send_e164": true,
+    "notes": "Create a Credentials connection in the Telnyx portal: it gives the user name and password. Assign your numbers to it, and give it an outbound voice profile to place calls.",
+    "tested": null,
+    "trunk": {
+        "transport": "udp",
+        "port": "5060",
+        "registration_enabled": "1",
+        "registration_expiration": "600",
+        "qualify_frequency": "60",
+        "codecs": "ulaw,alaw",
+        "dtmf_mode": "rfc4733"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "schema": 1,
+    "name": "Example Provider",
+    "country": "US",
+    "docs_url": "https://example.com/sip-setup",
+    "source": "working installation",
+    "host": "sip.example.com",
+    "host_hint": "",
+    "needs_login": true,
+    "send_e164": false,
+    "notes": "What the user has to do at the provider first.",
+    "tested": { "by": "your-github-name", "date": "2026-11", "aipbx": "1.60.6" },
+    "trunk": {
+        "transport": "udp",
+        "codecs": "alaw,ulaw",
+        "dtmf_mode": "rfc4733"
+    }
+}

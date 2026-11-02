@@ -1,0 +1,20 @@
+{
+    "schema": 1,
+    "name": "Twilio Elastic SIP Trunking",
+    "country": "global",
+    "docs_url": "https://www.twilio.com/docs/sip-trunking",
+    "source": "provider documentation",
+    "host": "",
+    "host_hint": "Your trunk's Termination SIP URI, such as example.pstn.twilio.com. Use the name, not an IP address.",
+    "needs_login": true,
+    "send_e164": true,
+    "notes": "The login is the Credential List of your Twilio trunk. The caller ID must be a Twilio number on your account or a verified one, in E.164: keep the last digits and prepend the code below if needed. Twilio does not use SIP registration. For incoming calls, set the Origination URI to this server and add Twilio's signaling addresses to Match Hosts on the trunk, as listed in the documentation.",
+    "tested": null,
+    "trunk": {
+        "transport": "udp",
+        "registration_enabled": "0",
+        "qualify_frequency": "60",
+        "codecs": "ulaw",
+        "dtmf_mode": "rfc4733"
+    }
+}

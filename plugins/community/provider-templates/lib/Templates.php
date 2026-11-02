@@ -20,6 +20,8 @@ final class ProviderTemplates
         'port' => '/^[1-9][0-9]{0,4}$/D',
         'codecs' => '/^[a-z0-9_]+(,[a-z0-9_]+)*$/D',
         'dtmf_mode' => '/^(rfc4733|inband|info|auto)$/D',
+        'from_domain' => '/^[A-Za-z0-9.-]{1,253}$/D',
+        'match_hosts' => '/^[0-9.\/]{7,18}(,[0-9.\/]{7,18}){0,9}$/D',
         'outbound_proxy' => '/^sip:[A-Za-z0-9.-]{1,253}(:[0-9]{1,5})?(\\\\;lr)?$/D',
         'registration_enabled' => self::FLAG,
         'registration_expiration' => '/^[0-9]{2,5}$/D',
@@ -56,7 +58,7 @@ final class ProviderTemplates
         if (($t['schema'] ?? null) !== self::SCHEMA) {
             $errors[] = 'schema must be ' . self::SCHEMA;
         }
-        if (!is_string($t['name'] ?? null) || !preg_match('/^[\p{L}\p{N} .&+\/-]{2,60}$/uD', $t['name'])) {
+        if (!is_string($t['name'] ?? null) || !preg_match('/^[\p{L}\p{N} .&+\/()-]{2,60}$/uD', $t['name'])) {
             $errors[] = 'name is missing or has characters that are not allowed';
         }
         if (!is_string($t['country'] ?? null) || !preg_match('/^([A-Z]{2}|global)$/D', $t['country'])) {
@@ -73,8 +75,8 @@ final class ProviderTemplates
             $errors[] = 'host must be a host name or IP address';
         }
         foreach (['host_hint', 'notes'] as $text) {
-            if (isset($t[$text]) && (!is_string($t[$text]) || mb_strlen($t[$text]) > 500)) {
-                $errors[] = "{$text} must be text of at most 500 characters";
+            if (isset($t[$text]) && (!is_string($t[$text]) || mb_strlen($t[$text]) > 900)) {
+                $errors[] = "{$text} must be text of at most 900 characters";
             }
         }
         foreach (['needs_login', 'send_e164'] as $flag) {
@@ -163,6 +165,10 @@ final class ProviderTemplates
         }
         if (!empty($t['send_e164'])) {
             $data['carrier_e164_country'] = preg_replace('/[^0-9]/', '', (string) ($input['country_code'] ?? ''));
+        }
+        $callerId = (string) preg_replace('/[^0-9+]/', '', (string) ($input['outbound_caller_id'] ?? ''));
+        if ($callerId !== '') {
+            $data['outbound_caller_id'] = $callerId;
         }
         $keep = trim((string) ($input['cid_prepend'] ?? ''));
         if ($keep !== '') {

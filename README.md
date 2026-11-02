@@ -32,7 +32,7 @@ Enable them on **Integrations → Plugins** in the portal.
 
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| *Yours could be the first one — see [Contributing](#-contributing-a-community-plugin).* | | | | |
+| **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |
 
 **Starting a plugin?** [`examples/sample-plugin`](examples/sample-plugin/) uses every hook in a few lines and
 does not touch calls: copy it, change the slug and delete what you do not need.

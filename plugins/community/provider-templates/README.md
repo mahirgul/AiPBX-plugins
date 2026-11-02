@@ -35,7 +35,7 @@ that one file. You do not need to write any code.
 | `tested` | `null`, or who tested it with real calls: `by` (GitHub name), `date` (`YYYY-MM`), `aipbx` (version) |
 | `trunk` | The trunk's settings, as text |
 
-Allowed in `trunk`: `transport`, `port`, `codecs`, `dtmf_mode`, `outbound_proxy`, `registration_enabled`, `registration_expiration`,
+Allowed in `trunk`: `transport`, `port`, `codecs`, `dtmf_mode`, `outbound_proxy`, `from_domain`, `match_hosts`, `registration_enabled`, `registration_expiration`,
 `qualify_frequency`, `direct_media`, `rtp_symmetric`, `rewrite_contact`, `force_rport`, `timers`, `prack_100rel`,
 `send_pai`, `send_rpid`, `t38_support`, `carrier_strip_prefix`, `carrier_add_prefix`.
 

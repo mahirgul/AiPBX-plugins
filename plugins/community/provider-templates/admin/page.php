@@ -97,6 +97,10 @@ uasort($countries, static fn(array $a, array $b): int => strcmp((string) ($a['na
                 <small class="u-hint">Numbers are converted to E.164 with this country's dialling plan.</small>
             </div>
             <?php endif; ?>
+            <div class="form-group">
+                <label class="form-label">Outbound caller ID (optional)</label>
+                <input type="text" name="outbound_caller_id" class="form-control" maxlength="30" placeholder="+43..." value="<?php echo $h($_POST['outbound_caller_id'] ?? ''); ?>">
+            </div>
             <div class="u-grid-2">
                 <div class="form-group">
                     <label class="form-label">Caller ID: keep the last digits (optional)</label>

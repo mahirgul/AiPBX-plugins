@@ -1,0 +1,166 @@
+{
+    "slug": "sms",
+    "name": "SMS / MMS",
+    "name_i18n": {
+        "en": "SMS / MMS",
+        "tr": "SMS / MMS"
+    },
+    "version": "1.0.0",
+    "author": "AiPBX community",
+    "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/sms",
+    "type": "community",
+    "category": "integration",
+    "icon": "fas fa-comment-sms",
+    "icon_style": "color: #22c55e;",
+    "description": "Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms. The users a number is given to read and answer them. Needs AiPBX 1.71 or newer.",
+    "description_i18n": {
+        "en": "Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms. The users a number is given to read and answer them. Needs AiPBX 1.71 or newer.",
+        "tr": "Numaralarınıza gelen ve giden kısa mesajlar: Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch veya VoIP.ms. Numaranın verildiği kullanıcılar okur ve yanıtlar. AiPBX 1.71 veya üstü gerekir."
+    },
+    "tables": [
+        "plg_sms_numbers",
+        "plg_sms_access",
+        "plg_sms_messages",
+        "plg_sms_media"
+    ],
+    "scopes": [],
+    "hooks": {
+        "public_endpoints": true,
+        "admin_page": {
+            "group": "integrations"
+        },
+        "user_page": {
+            "label": "Messages",
+            "label_i18n": {
+                "en": "Messages",
+                "tr": "Mesajlar"
+            },
+            "icon": "fas fa-comment-sms"
+        }
+    },
+    "settings_schema": [
+        {
+            "key": "twilio_account_sid",
+            "type": "text",
+            "default": "",
+            "label": "Twilio: Account SID"
+        },
+        {
+            "key": "twilio_auth_token",
+            "type": "password",
+            "default": "",
+            "label": "Twilio: Auth Token (also checks Twilio's signature)",
+            "secret": true
+        },
+        {
+            "key": "vonage_api_key",
+            "type": "text",
+            "default": "",
+            "label": "Vonage: API key"
+        },
+        {
+            "key": "vonage_api_secret",
+            "type": "password",
+            "default": "",
+            "label": "Vonage: API secret",
+            "secret": true
+        },
+        {
+            "key": "vonage_signature_secret",
+            "type": "password",
+            "default": "",
+            "label": "Vonage: signature secret (checks signed webhooks)",
+            "secret": true
+        },
+        {
+            "key": "plivo_auth_id",
+            "type": "text",
+            "default": "",
+            "label": "Plivo: Auth ID"
+        },
+        {
+            "key": "plivo_auth_token",
+            "type": "password",
+            "default": "",
+            "label": "Plivo: Auth Token (also checks Plivo's signature)",
+            "secret": true
+        },
+        {
+            "key": "telnyx_api_key",
+            "type": "password",
+            "default": "",
+            "label": "Telnyx: API key",
+            "secret": true
+        },
+        {
+            "key": "telnyx_public_key",
+            "type": "text",
+            "default": "",
+            "label": "Telnyx: public key (checks the webhook signature)"
+        },
+        {
+            "key": "bandwidth_account_id",
+            "type": "text",
+            "default": "",
+            "label": "Bandwidth: account ID"
+        },
+        {
+            "key": "bandwidth_application_id",
+            "type": "text",
+            "default": "",
+            "label": "Bandwidth: messaging application ID"
+        },
+        {
+            "key": "bandwidth_username",
+            "type": "text",
+            "default": "",
+            "label": "Bandwidth: API user name"
+        },
+        {
+            "key": "bandwidth_password",
+            "type": "password",
+            "default": "",
+            "label": "Bandwidth: API password",
+            "secret": true
+        },
+        {
+            "key": "sinch_service_plan_id",
+            "type": "text",
+            "default": "",
+            "label": "Sinch: service plan ID"
+        },
+        {
+            "key": "sinch_api_token",
+            "type": "password",
+            "default": "",
+            "label": "Sinch: API token",
+            "secret": true
+        },
+        {
+            "key": "sinch_region",
+            "type": "select",
+            "default": "us",
+            "label": "Sinch: region",
+            "options": {
+                "us": "US",
+                "eu": "EU",
+                "au": "Australia",
+                "br": "Brazil",
+                "ca": "Canada"
+            }
+        },
+        {
+            "key": "voipms_username",
+            "type": "text",
+            "default": "",
+            "label": "VoIP.ms: API user name (your e-mail)"
+        },
+        {
+            "key": "voipms_api_password",
+            "type": "password",
+            "default": "",
+            "label": "VoIP.ms: API password",
+            "secret": true
+        }
+    ]
+}

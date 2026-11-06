@@ -1,0 +1,20 @@
+name: SMS plugin
+
+on:
+  push:
+    paths: ['plugins/community/sms/**']
+  pull_request:
+    paths: ['plugins/community/sms/**']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: find plugins/community/sms -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Providers
+        run: php plugins/community/sms/tests/providers.php

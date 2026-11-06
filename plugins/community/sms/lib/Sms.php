@@ -121,7 +121,7 @@ final class Sms
     {
         $db = getDB();
         $db->prepare('DELETE m FROM plg_sms_media m JOIN plg_sms_messages s ON s.id = m.message_id WHERE s.number_id = ?')->execute([$id]);
-        foreach (['plg_sms_messages', 'plg_sms_access'] as $table) {
+        foreach (['plg_sms_messages', 'plg_sms_access', 'plg_sms_contacts'] as $table) {
             $db->prepare("DELETE FROM {$table} WHERE number_id = ?")->execute([$id]);
         }
         $db->prepare('DELETE FROM plg_sms_numbers WHERE id = ?')->execute([$id]);
@@ -133,7 +133,7 @@ final class Sms
      * Stores the messages of a webhook request that the provider proved it sent. Returns how many
      * were new; a message for a number not listed here, or one seen before, is skipped.
      */
-    public static function receive(SmsProvider $provider, array $request): int
+    public static function receive(SmsProvider $provider, array $request, array $settings = []): int
     {
         $db = getDB();
         $find = $db->prepare('SELECT id FROM plg_sms_numbers WHERE number = ? AND provider = ?');
@@ -157,9 +157,84 @@ final class Sms
             foreach (array_slice($m['media'], 0, 10) as $url) {
                 self::fetchMedia($provider, $messageId, $url);
             }
+            if (($settings['email_notify'] ?? '1') === '1') {
+                self::notify($numberId, $messageId, $m['from'], $m['text'], count($m['media']));
+            }
             $new++;
         }
         return $new;
+    }
+
+    /**
+     * E-mails the users of a number about a message that arrived, in the portal's mail look. One mail
+     * per conversation in 10 minutes, so a quick exchange does not fill the inbox; a failed mail is
+     * only logged.
+     */
+    private static function notify(int $numberId, int $messageId, string $from, string $text, int $media): void
+    {
+        try {
+            $db = getDB();
+            $recent = $db->prepare("SELECT COUNT(*) FROM plg_sms_messages WHERE number_id = ? AND peer = ? AND direction = 'in' AND id <> ? AND created_at > NOW() - INTERVAL 10 MINUTE");
+            $recent->execute([$numberId, $from, $messageId]);
+            if ((int) $recent->fetchColumn() > 0) {
+                return;
+            }
+            // The core's mail service, next to PluginManager (src/core → src/services).
+            if (!class_exists('MailTemplateService')) {
+                require_once dirname((string) (new \ReflectionClass('PluginManager'))->getFileName(), 2) . '/services/MailTemplateService.php';
+            }
+            $num = $db->prepare('SELECT number, label FROM plg_sms_numbers WHERE id = ?');
+            $num->execute([$numberId]);
+            $n = $num->fetch(PDO::FETCH_ASSOC) ?: ['number' => '', 'label' => ''];
+            $users = $db->prepare("SELECT u.email FROM plg_sms_access a JOIN sys_users u ON u.id = a.user_id WHERE a.number_id = ? AND u.email <> ''");
+            $users->execute([$numberId]);
+            $name = self::contacts($numberId)[$from] ?? '';
+            $vars = [
+                'peer' => $name !== '' ? "{$name} ({$from})" : $from,
+                'number' => trim($n['number'] . ($n['label'] !== '' ? ' · ' . $n['label'] : '')),
+                'text' => mb_strimwidth($text, 0, 500, '…') . ($media > 0 ? " [{$media} picture(s)]" : ''),
+                'link' => self::baseUrl() . '/apps/sms?' . http_build_query(['n' => $numberId, 'peer' => $from]),
+            ];
+            $template = ['subject' => 'New message from {peer}',
+                'body' => '<p><strong>{peer}</strong> wrote to {number}:</p><blockquote>{text}</blockquote><p><a href="{link}">Open the conversation</a></p>'];
+            [$fromAddress, $fromName] = MailTemplateService::sender('portal');
+            foreach ($users->fetchAll(PDO::FETCH_COLUMN) as $to) {
+                $mail = MailTemplateService::render('sms', 'en', $vars, [], $template);
+                [$headers, $body] = MailTemplateService::buildMime($mail, $fromAddress, $fromName);
+                if (!@mail((string) $to, mb_encode_mimeheader($mail['subject'], 'UTF-8'), $body, $headers, '-f ' . $fromAddress)) {
+                    error_log("sms plugin: mail to {$to} failed");
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log('sms plugin: notify: ' . $e->getMessage());
+        }
+    }
+
+    // --- contacts ---
+
+    /** @return array<string, string> phone => name, for one number */
+    public static function contacts(int $numberId): array
+    {
+        $q = getDB()->prepare('SELECT phone, name FROM plg_sms_contacts WHERE number_id = ? ORDER BY name');
+        $q->execute([$numberId]);
+        return $q->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
+    }
+
+    /** Names a peer for everyone on this number; an empty name removes it. */
+    public static function saveContact(int $numberId, string $phone, string $name): void
+    {
+        $phone = SmsProvider::e164($phone);
+        $name = trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $name) ?? '');
+        if (!preg_match('/^\+[1-9][0-9]{6,14}$/', $phone)) {
+            throw new \InvalidArgumentException('Write the number in international form, e.g. +15551234567.');
+        }
+        $db = getDB();
+        if ($name === '') {
+            $db->prepare('DELETE FROM plg_sms_contacts WHERE number_id = ? AND phone = ?')->execute([$numberId, $phone]);
+            return;
+        }
+        $db->prepare('INSERT INTO plg_sms_contacts (number_id, phone, name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)')
+            ->execute([$numberId, $phone, mb_substr($name, 0, 80)]);
     }
 
     /** Downloads a picture the provider links to; one that fails is noted in the text instead. */

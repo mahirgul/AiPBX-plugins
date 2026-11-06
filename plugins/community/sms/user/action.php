@@ -14,12 +14,20 @@ return static function (string $slug, array $settings, array $user): array {
     if ($action === 'poll') {
         return ['json' => ['last' => Sms::lastId(array_keys($numbers))]];
     }
-    if ($action !== 'send') {
+    $number = $numbers[(int) ($_POST['number_id'] ?? 0)] ?? null;
+    if (!in_array($action, ['send', 'contact'], true)) {
         return [];
     }
-    $number = $numbers[(int) ($_POST['number_id'] ?? 0)] ?? null;
     if ($number === null) {
         return ['error' => 'This number is not yours.'];
+    }
+    if ($action === 'contact') {
+        try {
+            Sms::saveContact((int) $number['id'], (string) ($_POST['peer'] ?? ''), (string) ($_POST['name'] ?? ''));
+            return ['message' => 'Name saved.'];
+        } catch (\Throwable $e) {
+            return ['error' => $e->getMessage()];
+        }
     }
     $files = [];
     $up = $_FILES['media'] ?? null;

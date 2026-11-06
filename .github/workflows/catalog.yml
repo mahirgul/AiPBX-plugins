@@ -1,0 +1,27 @@
+name: Community catalog
+
+# Publishes every community plugin as a .zip with catalog.json on the release "catalog",
+# where AiPBX (1.72+) installs and updates them from when the administrator turns the catalog on.
+on:
+  push:
+    branches: [main]
+    paths: ['plugins/community/**', 'scripts/build-catalog.php']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: php scripts/build-catalog.php dist
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view catalog >/dev/null 2>&1 || gh release create catalog --title "Community plugin catalog" \
+            --notes "Built by CI from plugins/community: one .zip per plugin and catalog.json. AiPBX installs from here." --latest=false
+          gh release upload catalog dist/* --clobber

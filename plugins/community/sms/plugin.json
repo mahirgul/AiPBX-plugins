@@ -5,7 +5,8 @@
         "en": "SMS / MMS",
         "tr": "SMS / MMS"
     },
-    "version": "1.0.0",
+    "version": "1.1.0",
+    "requires_aipbx": "1.71.0",
     "author": "AiPBX community",
     "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/sms",
     "type": "community",
@@ -21,7 +22,8 @@
         "plg_sms_numbers",
         "plg_sms_access",
         "plg_sms_messages",
-        "plg_sms_media"
+        "plg_sms_media",
+        "plg_sms_contacts"
     ],
     "scopes": [],
     "hooks": {
@@ -39,6 +41,12 @@
         }
     },
     "settings_schema": [
+        {
+            "key": "email_notify",
+            "type": "boolean",
+            "default": "1",
+            "label": "E-mail a number's users when a message arrives (at most one mail per conversation in 10 minutes)"
+        },
         {
             "key": "twilio_account_sid",
             "type": "text",

@@ -35,6 +35,11 @@ Enable them on **Integrations → Plugins** in the portal.
 | **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |
 | **SMS / MMS** | [`sms`](plugins/community/sms/) | `integration` | Community | Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms; the users a number is given to answer them. AiPBX 1.71+. |
 
+**Installing:** on AiPBX 1.72+, tick **Show community plugins from the catalog** on **Integrations → Plugins**
+and install or update them there; the CI of this repository publishes them on the release
+[`catalog`](https://github.com/mahirgul/aipbx-plugins/releases/tag/catalog). Older versions: upload the
+plugin's folder as a `.zip`.
+
 **Starting a plugin?** [`examples/sample-plugin`](examples/sample-plugin/) uses every hook in a few lines and
 does not touch calls: copy it, change the slug and delete what you do not need.
 

@@ -18,6 +18,7 @@ $threads = Sms::threads([$nid]);
 $messages = $peer !== '' ? Sms::thread($nid, $peer) : [];
 $link = static fn(int $n, string $p = ''): string => '/apps/sms?' . http_build_query(array_filter(['n' => $n, 'peer' => $p]));
 $numberName = static fn(array $n): string => $n['number'] . ($n['label'] !== '' ? ' · ' . $n['label'] : '');
+$contacts = Sms::contacts($nid);
 
 echo uiPageHeader('fas fa-comment-sms', 'Messages');
 ?>
@@ -43,15 +44,18 @@ echo uiPageHeader('fas fa-comment-sms', 'Messages');
         <div class="u-p-16">
             <form method="get" action="/apps/sms" class="u-flex-gap u-mb-20">
                 <input type="hidden" name="n" value="<?php echo $nid; ?>">
-                <input type="text" name="peer" class="form-control" placeholder="New: +15551234567" required>
+                <input type="text" name="peer" class="form-control" placeholder="New: +15551234567" list="smsContacts" required>
+                <datalist id="smsContacts"><?php foreach ($contacts as $phone => $name): ?><option value="<?php echo $h($phone); ?>"><?php echo $h($name); ?></option><?php endforeach; ?></datalist>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-pen"></i> Write</button>
             </form>
+            <div id="smsThreads">
             <?php echo uiTableOpen([], ['search' => false]); ?>
             <?php if ($threads === []): echo uiTableEmptyRow(1, 'No messages yet.'); endif; ?>
             <?php foreach ($threads as $t): ?>
                 <tr<?php echo $t['peer'] === $peer ? ' class="active"' : ''; ?>>
                     <td>
-                        <a href="<?php echo $h($link($nid, (string) $t['peer'])); ?>"><strong><?php echo $h($t['peer']); ?></strong></a>
+                        <a href="<?php echo $h($link($nid, (string) $t['peer'])); ?>"><strong><?php echo $h($contacts[$t['peer']] ?? $t['peer']); ?></strong></a>
+                        <?php if (isset($contacts[$t['peer']])): ?><span class="u-muted"><?php echo $h($t['peer']); ?></span><?php endif; ?>
                         <?php if ((int) $t['unread'] > 0): ?><span class="badge badge-success"><?php echo (int) $t['unread']; ?></span><?php endif; ?>
                         <div class="u-muted"><?php echo $h(($t['direction'] === 'out' ? '→ ' : '') . mb_strimwidth((string) $t['body'], 0, 70, '…')); ?></div>
                     </td>
@@ -59,13 +63,22 @@ echo uiPageHeader('fas fa-comment-sms', 'Messages');
                 </tr>
             <?php endforeach; ?>
             <?php echo uiTableClose(); ?>
+            </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header"><div class="card-title"><i class="fas fa-user"></i> <?php echo $h($peer !== '' ? $peer : 'Choose a conversation'); ?></div></div>
+        <div class="card-header"><div class="card-title"><i class="fas fa-user"></i> <?php echo $h($peer === '' ? 'Choose a conversation' : (isset($contacts[$peer]) ? $contacts[$peer] . ' · ' . $peer : $peer)); ?></div></div>
         <div class="u-p-16">
             <?php if ($peer !== ''): ?>
+                <form method="post" class="u-flex-gap u-mb-20">
+                    <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
+                    <input type="hidden" name="sms_action" value="contact">
+                    <input type="hidden" name="number_id" value="<?php echo $nid; ?>">
+                    <input type="hidden" name="peer" value="<?php echo $h($peer); ?>">
+                    <input type="text" name="name" class="form-control" maxlength="80" value="<?php echo $h($contacts[$peer] ?? ''); ?>" placeholder="Name for this number">
+                    <button type="submit" class="btn btn-secondary"><i class="fas fa-address-book"></i> Save name</button>
+                </form>
                 <div class="sms-msgs" id="smsMsgs">
                 <?php foreach ($messages as $m): ?>
                     <div class="sms-msg<?php echo $m['direction'] === 'out' ? ' sms-out' : ''; ?>">
@@ -107,21 +120,33 @@ echo uiPageHeader('fas fa-comment-sms', 'Messages');
     </div>
 </div>
 <script>
-// Newest message in view; something new arrived: reload, unless a reply is being written.
+// New messages appear by themselves: every 5 s the page asks for the newest id, and when it changed
+// it fetches itself and swaps in the conversation list and the messages; a reply being written stays.
 (function () {
     const box = document.getElementById('smsMsgs');
     if (box) { box.scrollTop = box.scrollHeight; }
     let last = <?php echo Sms::lastId(array_keys($numbers)); ?>;
+    const swap = (doc, id) => {
+        const now = document.getElementById(id), fresh = doc.getElementById(id);
+        if (now && fresh) { now.innerHTML = fresh.innerHTML; }
+    };
     setInterval(function () {
+        if (document.hidden) { return; }
         const body = new URLSearchParams({ csrf_token: <?php echo json_encode($csrf_token); ?>, sms_action: 'poll' });
         fetch(location.href, { method: 'POST', body: body, credentials: 'same-origin' })
             .then((r) => r.json())
             .then((d) => {
-                const text = document.getElementById('smsText');
-                if (d.last > last && (!text || text.value === '')) { location.reload(); }
-                last = Math.max(last, d.last || 0);
+                if (!(d.last > last)) { return; }
+                last = d.last;
+                return fetch(location.href, { credentials: 'same-origin' }).then((r) => r.text()).then((html) => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const atEnd = !box || box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+                    swap(doc, 'smsThreads');
+                    swap(doc, 'smsMsgs');
+                    if (box && atEnd) { box.scrollTop = box.scrollHeight; }
+                });
             })
             .catch(() => {});
-    }, 15000);
+    }, 5000);
 })();
 </script>

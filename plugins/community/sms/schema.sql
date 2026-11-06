@@ -48,3 +48,11 @@ CREATE TABLE IF NOT EXISTS plg_sms_media (
     PRIMARY KEY (id),
     KEY idx_message (message_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Names of peers, shared by the users of a number.
+CREATE TABLE IF NOT EXISTS plg_sms_contacts (
+    number_id INT UNSIGNED NOT NULL,
+    phone VARCHAR(32) NOT NULL,
+    name VARCHAR(80) NOT NULL,
+    PRIMARY KEY (number_id, phone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

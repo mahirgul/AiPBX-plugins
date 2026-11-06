@@ -55,7 +55,7 @@ return static function (string $subPath, array $settings): void {
             $answer(403, 'text/plain', 'signature check failed');
             return;
         }
-        Sms::receive($provider, $request);
+        Sms::receive($provider, $request, $settings);
         [$type, $body] = $provider->reply();
         $answer(200, $type, $body);
     } catch (\Throwable $e) {

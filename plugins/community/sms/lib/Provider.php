@@ -111,7 +111,6 @@ abstract class SmsProvider
         $answer = curl_exec($ch);
         $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $err = curl_error($ch);
-        curl_close($ch);
         if ($answer === false) {
             throw new \RuntimeException('SMS provider: ' . $err);
         }

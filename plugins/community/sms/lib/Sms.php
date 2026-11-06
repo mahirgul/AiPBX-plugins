@@ -251,7 +251,6 @@ final class Sms
             $data = curl_exec($ch);
             $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
             $type = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-            curl_close($ch);
             if (!is_string($data) || $code !== 200 || strlen($data) > self::MAX_MEDIA_BYTES) {
                 throw new \RuntimeException("HTTP {$code}");
             }

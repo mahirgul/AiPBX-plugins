@@ -5,7 +5,7 @@
         "en": "SMS / MMS",
         "tr": "SMS / MMS"
     },
-    "version": "1.1.0",
+    "version": "1.1.1",
     "requires_aipbx": "1.71.0",
     "author": "AiPBX community",
     "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/sms",

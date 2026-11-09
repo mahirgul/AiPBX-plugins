@@ -5,7 +5,7 @@
         "en": "SMS / MMS",
         "tr": "SMS / MMS"
     },
-    "version": "1.1.1",
+    "version": "1.2.0",
     "requires_aipbx": "1.71.0",
     "author": "AiPBX community",
     "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/sms",
@@ -13,10 +13,10 @@
     "category": "integration",
     "icon": "fas fa-comment-sms",
     "icon_style": "color: #22c55e;",
-    "description": "Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms. The users a number is given to read and answer them. Needs AiPBX 1.71 or newer.",
+    "description": "Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch, VoIP.ms or BulkVS. The users a number is given to read and answer them. Needs AiPBX 1.71 or newer.",
     "description_i18n": {
-        "en": "Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms. The users a number is given to read and answer them. Needs AiPBX 1.71 or newer.",
-        "tr": "Numaralarınıza gelen ve giden kısa mesajlar: Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch veya VoIP.ms. Numaranın verildiği kullanıcılar okur ve yanıtlar. AiPBX 1.71 veya üstü gerekir."
+        "en": "Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch, VoIP.ms or BulkVS. The users a number is given to read and answer them. Needs AiPBX 1.71 or newer.",
+        "tr": "Numaralarınıza gelen ve giden kısa mesajlar: Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch, VoIP.ms veya BulkVS. Numaranın verildiği kullanıcılar okur ve yanıtlar. AiPBX 1.71 veya üstü gerekir."
     },
     "tables": [
         "plg_sms_numbers",
@@ -168,6 +168,19 @@
             "type": "password",
             "default": "",
             "label": "VoIP.ms: API password",
+            "secret": true
+        },
+        {
+            "key": "bulkvs_username",
+            "type": "text",
+            "default": "",
+            "label": "BulkVS: API user name"
+        },
+        {
+            "key": "bulkvs_password",
+            "type": "password",
+            "default": "",
+            "label": "BulkVS: API password (from API Credentials -> Rest API)",
             "secret": true
         }
     ]

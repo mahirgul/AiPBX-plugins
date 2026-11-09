@@ -22,6 +22,7 @@ SmsProvider::$http = static function (string $method, string $url, array $header
     $answers = [
         'twilio.com' => '{"sid":"SM1"}', 'nexmo.com' => '{"message_uuid":"v-1"}', 'plivo.com' => '{"message_uuid":["p-1"]}',
         'telnyx.com' => '{"data":{"id":"t-1"}}', 'bandwidth.com' => '{"id":"b-1"}', 'sinch.com' => '{"id":"s-1"}', 'voip.ms' => '{"status":"success","sms":"7"}',
+        'bulkvs.com' => '{"status":"success","data":{"messageId":"bv-1"}}',
     ];
     foreach ($answers as $host => $answer) {
         if (str_contains((string) parse_url($url, PHP_URL_HOST), $host)) {
@@ -36,6 +37,7 @@ $settings = [
     'plivo_auth_id' => 'MA1', 'plivo_auth_token' => 'ptok', 'telnyx_api_key' => 'KEY', 'bandwidth_account_id' => '99', 'bandwidth_application_id' => 'app',
     'bandwidth_username' => 'u', 'bandwidth_password' => 'p', 'sinch_service_plan_id' => 'plan', 'sinch_api_token' => 'st', 'sinch_region' => 'eu',
     'voipms_username' => 'me@example.com', 'voipms_api_password' => 'vp',
+    'bulkvs_username' => 'buser', 'bulkvs_password' => 'bpass',
 ];
 
 // --- e164 ---
@@ -143,6 +145,17 @@ parse_str((string) parse_url(end($sent)['url'], PHP_URL_QUERY), $q);
 $check($q['method'] === 'sendMMS' && $q['media1'] === 'https://a/1', 'voipms mms');
 $in = $p->inbound($req(['query' => ['from' => '5552223333', 'to' => '5550001111', 'message' => 'yo', 'id' => '12', 'media' => 'https://voip.ms/m/1.jpg']]));
 $check($in[0]['from'] === '+15552223333' && $in[0]['media'] === ['https://voip.ms/m/1.jpg'], 'voipms inbound');
+
+// --- BulkVS ---
+$p = new SmsBulkvs($settings);
+$check($p->send('+15550001111', '+15552223333', 'hi') === 'bv-1', 'bulkvs id');
+$b = json_decode(end($sent)['body'], true);
+$check($b['From'] === '15550001111' && $b['To'] === ['15552223333'] && $b['Message'] === 'hi', 'bulkvs send');
+$p->send('+15550001111', '+15552223333', 'hi', ['https://a/1']);
+$b = json_decode(end($sent)['body'], true);
+$check($b['MediaUrls'] === ['https://a/1'], 'bulkvs mms');
+$in = $p->inbound($req(['body' => '{"From":"15552223333","To":"15550001111","Message":"yo","MediaUrls":["https://bulkvs.com/m/1.jpg"],"MessageId":"bv-9"}']));
+$check($in[0]['from'] === '+15552223333' && $in[0]['to'] === '+15550001111' && $in[0]['text'] === 'yo' && $in[0]['media'] === ['https://bulkvs.com/m/1.jpg'] && $in[0]['id'] === 'bv-9', 'bulkvs inbound');
 
 // A failing provider answer becomes an error with its text.
 SmsProvider::$http = static fn(): array => [401, '{"message":"bad key"}'];

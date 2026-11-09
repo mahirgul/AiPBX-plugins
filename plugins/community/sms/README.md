@@ -1,7 +1,7 @@
 # SMS / MMS
 
 Text messages on your numbers, sent and received through **Twilio, Vonage, Plivo, Telnyx, Bandwidth,
-Sinch or VoIP.ms**. The users a number is given to read and answer its messages under **Messages**;
+Sinch, VoIP.ms or BulkVS**. The users a number is given to read and answer its messages under **Messages**;
 administrators see every number. Needs AiPBX 1.71 or newer (the `user_page` hook). Requested in
 [AiPBX #152](https://github.com/mahirgul/AiPBX/issues/152).
 
@@ -36,6 +36,7 @@ administrators see every number. Needs AiPBX 1.71 or newer (the `user_page` hook
 | Bandwidth | JSON list, `message-received` | secret key in the address | yes |
 | Sinch | JSON, `mo_text` / `mo_media` | secret key in the address | US, CA, AU when Sinch turns it on; one picture per message |
 | VoIP.ms | URL callback with placeholders | secret key in the address | yes, up to 3 |
+| BulkVS | JSON (HTTP POST) | secret key in the address | yes, up to 3 |
 
 Every request also needs the secret key in its address.
 

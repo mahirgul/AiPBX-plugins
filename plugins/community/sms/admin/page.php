@@ -24,6 +24,7 @@ foreach ($users as $u) {
             $url = Sms::webhookUrl($id) . ($id === 'voipms' ? SmsVoipms::CALLBACK_QUERY : '');
             $where = [
                 'bandwidth' => 'Messaging application → Callback URL (POST)',
+                'bulkvs' => 'Messaging → Messaging Webhooks (HTTP POST)',
                 'plivo' => 'Application → Message URL, method POST',
                 'sinch' => 'Service plan → Callback URL',
                 'telnyx' => 'Messaging profile → Inbound webhook URL',

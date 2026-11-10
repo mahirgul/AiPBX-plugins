@@ -1,0 +1,96 @@
+{
+    "slug": "cnam",
+    "name": "Caller Name (CNAM)",
+    "name_i18n": {
+        "en": "Caller Name (CNAM)",
+        "tr": "Arayan Adı (CNAM)"
+    },
+    "version": "1.0.0",
+    "requires_aipbx": "1.72.0",
+    "author": "AiPBX community",
+    "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/cnam",
+    "type": "community",
+    "category": "integration",
+    "icon": "fas fa-id-card",
+    "icon_style": "color: #0284c7;",
+    "description": "Caller ID name lookup for inbound calls: checks phonebook & contacts, then queries BulkVS, OpenCNAM or custom URL with local caching to reduce costs.",
+    "description_i18n": {
+        "en": "Caller ID name lookup for inbound calls: checks phonebook & contacts, then queries BulkVS, OpenCNAM or custom URL with local caching to reduce costs.",
+        "tr": "Gelen aramalarda arayan adı sorgulaması: önce dahili rehberi kontrol eder, ardından BulkVS, OpenCNAM veya özel URL ile sorgulayıp maliyeti düşürmek için önbelleğe alır."
+    },
+    "tables": [
+        "plg_cnam_cache"
+    ],
+    "scopes": [],
+    "hooks": {
+        "public_endpoints": true,
+        "sync_domain": "general_dialplan",
+        "admin_page": {
+            "group": "integrations"
+        }
+    },
+    "settings_schema": [
+        {
+            "key": "provider",
+            "type": "select",
+            "default": "bulkvs",
+            "label": "CNAM Provider",
+            "options": {
+                "bulkvs": "BulkVS",
+                "opencnam": "OpenCNAM",
+                "custom": "Custom URL",
+                "phonebook_only": "Local Phonebook Only (Free)"
+            }
+        },
+        {
+            "key": "cache_days",
+            "type": "number",
+            "default": "30",
+            "label": "Cache Duration (Days, 0 = no cache)"
+        },
+        {
+            "key": "overwrite_existing",
+            "type": "boolean",
+            "default": "0",
+            "label": "Overwrite name even if already provided by carrier / trunk"
+        },
+        {
+            "key": "check_phonebook",
+            "type": "boolean",
+            "default": "1",
+            "label": "Check local extensions & contacts before paid provider"
+        },
+        {
+            "key": "bulkvs_api_key",
+            "type": "password",
+            "default": "",
+            "label": "BulkVS: API Key / ID",
+            "secret": true
+        },
+        {
+            "key": "bulkvs_endpoint",
+            "type": "text",
+            "default": "https://cnam.bulkvs.com/",
+            "label": "BulkVS: Endpoint URL"
+        },
+        {
+            "key": "opencnam_account_sid",
+            "type": "text",
+            "default": "",
+            "label": "OpenCNAM: Account SID"
+        },
+        {
+            "key": "opencnam_auth_token",
+            "type": "password",
+            "default": "",
+            "label": "OpenCNAM: Auth Token",
+            "secret": true
+        },
+        {
+            "key": "custom_url",
+            "type": "text",
+            "default": "",
+            "label": "Custom URL (use {number} or will append ?num=...)"
+        }
+    ]
+}

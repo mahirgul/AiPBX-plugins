@@ -39,7 +39,6 @@ $bulkvs = new CnamBulkvs([
 ]);
 $assert($bulkvs->configured(), 'BulkVS is configured when API key is provided');
 
-// Mock HTTP for BulkVS JSON response
 CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
     if (str_contains($url, '12125551234')) {
         return [200, json_encode([
@@ -57,16 +56,141 @@ $name = $bulkvs->lookup('2125551234');
 $assert($name === 'ACME SERVICES', 'BulkVS resolves JSON name: ' . var_export($name, true));
 
 $nameNull = $bulkvs->lookup('2125559999');
-$assert($nameNull === null, 'BulkVS unavailable returns null: ' . var_export($nameNull, true));
+$assert($nameNull === null, 'BulkVS unavailable returns null');
 
-// Mock HTTP for BulkVS Plain Text response
 CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
     return [200, 'ACME PLAIN TEXT'];
 };
 $namePlain = $bulkvs->lookup('2125551234');
 $assert($namePlain === 'ACME PLAIN TEXT', 'BulkVS resolves plain text response: ' . var_export($namePlain, true));
 
-// 4. OpenCNAM Provider tests
+// 4. Telnyx Provider tests
+$telnyx = new CnamTelnyx([
+    'telnyx_api_key' => 'KEY0123456789',
+]);
+$assert($telnyx->configured(), 'Telnyx is configured when API key provided');
+
+CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
+    $auth = in_array('Authorization: Bearer KEY0123456789', $headers, true);
+    if ($auth && str_contains($url, 'v2/number_lookup/%2B13129457420')) {
+        return [200, json_encode([
+            'data' => [
+                'record_type' => 'number_lookup',
+                'phone_number' => '+13129457420',
+                'caller_name' => [
+                    'caller_name' => 'TELNYX LLC',
+                    'error_code' => null,
+                ],
+            ],
+        ])];
+    }
+    return [404, ''];
+};
+$telnyxName = $telnyx->lookup('+13129457420');
+$assert($telnyxName === 'TELNYX LLC', 'Telnyx resolves caller name: ' . var_export($telnyxName, true));
+
+// 5. Twilio Provider tests
+$twilio = new CnamTwilio([
+    'twilio_account_sid' => 'AC1234567890',
+    'twilio_auth_token'  => 'auth_secret_token',
+]);
+$assert($twilio->configured(), 'Twilio is configured when credentials provided');
+
+CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
+    $expectedAuth = 'Authorization: Basic ' . base64_encode('AC1234567890:auth_secret_token');
+    $auth = in_array($expectedAuth, $headers, true);
+    if ($auth && str_contains($url, 'v2/PhoneNumbers/%2B14159929960')) {
+        return [200, json_encode([
+            'phone_number' => '+14159929960',
+            'caller_name' => [
+                'caller_name' => 'TWILIO INC.',
+                'caller_type' => 'BUSINESS',
+                'error_code' => null,
+            ],
+        ])];
+    }
+    return [404, ''];
+};
+$twilioName = $twilio->lookup('+14159929960');
+$assert($twilioName === 'TWILIO INC.', 'Twilio resolves caller name: ' . var_export($twilioName, true));
+
+// 6. Vonage Provider tests
+$vonage = new CnamVonage([
+    'vonage_api_key'    => 'v_key_123',
+    'vonage_api_secret' => 'v_sec_456',
+]);
+$assert($vonage->configured(), 'Vonage is configured when API key and secret provided');
+
+CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
+    if (str_contains($url, 'api_key=v_key_123') && str_contains($url, 'number=12125551234')) {
+        return [200, json_encode([
+            'status' => 0,
+            'caller_name' => 'VONAGE SERVICES',
+        ])];
+    }
+    return [200, json_encode(['status' => 1])];
+};
+$vonageName = $vonage->lookup('12125551234');
+$assert($vonageName === 'VONAGE SERVICES', 'Vonage resolves caller name: ' . var_export($vonageName, true));
+
+// 7. SignalWire Provider tests
+$signalwire = new CnamSignalwire([
+    'signalwire_space'      => 'example.signalwire.com',
+    'signalwire_project_id' => 'proj_abc',
+    'signalwire_token'      => 'token_xyz',
+]);
+$assert($signalwire->configured(), 'SignalWire is configured when space, project and token provided');
+
+CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
+    if (str_contains($url, 'example.signalwire.com/api/relay/rest/lookup/phone_number/%2B12125551234')) {
+        return [200, json_encode([
+            'cnam' => ['name' => 'SIGNALWIRE CLIENT'],
+        ])];
+    }
+    return [404, ''];
+};
+$swName = $signalwire->lookup('+12125551234');
+$assert($swName === 'SIGNALWIRE CLIENT', 'SignalWire resolves caller name: ' . var_export($swName, true));
+
+// 8. NumVerify Provider tests
+$numverify = new CnamNumverify([
+    'numverify_access_key' => 'access_key_999',
+]);
+$assert($numverify->configured(), 'NumVerify is configured when access key provided');
+
+CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
+    if (str_contains($url, 'access_key=access_key_999') && str_contains($url, 'number=14158586273')) {
+        return [200, json_encode([
+            'valid'    => true,
+            'carrier'  => 'AT&T Mobility LLC',
+            'location' => 'Novato',
+        ])];
+    }
+    return [200, json_encode(['valid' => false])];
+};
+$nvName = $numverify->lookup('14158586273');
+$assert($nvName === 'AT&T Mobility LLC (Novato)', 'NumVerify resolves carrier + location: ' . var_export($nvName, true));
+
+// 9. AbstractAPI Provider tests
+$abstractapi = new CnamAbstractapi([
+    'abstractapi_api_key' => 'abs_key_555',
+]);
+$assert($abstractapi->configured(), 'AbstractAPI is configured when API key provided');
+
+CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
+    if (str_contains($url, 'api_key=abs_key_555') && str_contains($url, 'phone=14154582468')) {
+        return [200, json_encode([
+            'valid'               => true,
+            'carrier'             => 'Verizon USA',
+            'registered_location' => 'San Francisco',
+        ])];
+    }
+    return [200, json_encode(['valid' => false])];
+};
+$absName = $abstractapi->lookup('14154582468');
+$assert($absName === 'Verizon USA (San Francisco)', 'AbstractAPI resolves carrier + location: ' . var_export($absName, true));
+
+// 10. OpenCNAM Provider tests
 $opencnam = new CnamOpencnam([
     'opencnam_account_sid' => 'ACtest123',
     'opencnam_auth_token'  => 'auth_token_xyz',
@@ -83,7 +207,7 @@ CnamProvider::$http = static function (string $method, string $url, array $heade
 $ocName = $opencnam->lookup('+16505550100');
 $assert($ocName === 'OPENCNAM CALLER', 'OpenCNAM resolves caller name: ' . var_export($ocName, true));
 
-// 5. Custom URL Provider tests
+// 11. Custom URL Provider tests
 $custom = new CnamCustom([
     'custom_url' => 'https://crm.local/cnam.php?num={number}',
 ]);
@@ -95,8 +219,14 @@ CnamProvider::$http = static function (string $method, string $url, array $heade
 $customName = $custom->lookup('12125551234');
 $assert($customName === 'CRM CLIENT', 'Custom URL resolves caller name: ' . var_export($customName, true));
 
-// 6. Provider Factory test
+// 12. Provider Factory tests for all registered providers
 $assert(Cnam::provider('bulkvs', []) instanceof CnamBulkvs, 'Factory creates BulkVS');
+$assert(Cnam::provider('telnyx', []) instanceof CnamTelnyx, 'Factory creates Telnyx');
+$assert(Cnam::provider('twilio', []) instanceof CnamTwilio, 'Factory creates Twilio');
+$assert(Cnam::provider('vonage', []) instanceof CnamVonage, 'Factory creates Vonage');
+$assert(Cnam::provider('signalwire', []) instanceof CnamSignalwire, 'Factory creates SignalWire');
+$assert(Cnam::provider('numverify', []) instanceof CnamNumverify, 'Factory creates NumVerify');
+$assert(Cnam::provider('abstractapi', []) instanceof CnamAbstractapi, 'Factory creates AbstractAPI');
 $assert(Cnam::provider('opencnam', []) instanceof CnamOpencnam, 'Factory creates OpenCNAM');
 $assert(Cnam::provider('custom', []) instanceof CnamCustom, 'Factory creates Custom');
 $assert(Cnam::provider('unknown', []) === null, 'Factory returns null for unknown provider');

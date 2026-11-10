@@ -5,6 +5,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/Provider.php';
 require_once __DIR__ . '/providers/Bulkvs.php';
 require_once __DIR__ . '/providers/Opencnam.php';
+require_once __DIR__ . '/providers/Telnyx.php';
+require_once __DIR__ . '/providers/Twilio.php';
+require_once __DIR__ . '/providers/Vonage.php';
+require_once __DIR__ . '/providers/Signalwire.php';
+require_once __DIR__ . '/providers/Numverify.php';
+require_once __DIR__ . '/providers/Abstractapi.php';
 require_once __DIR__ . '/providers/Custom.php';
 
 final class Cnam
@@ -17,10 +23,16 @@ final class Cnam
     public static function provider(string $id, array $settings): ?CnamProvider
     {
         return match ($id) {
-            'bulkvs'   => new CnamBulkvs($settings),
-            'opencnam' => new CnamOpencnam($settings),
-            'custom'   => new CnamCustom($settings),
-            default    => null,
+            'bulkvs'      => new CnamBulkvs($settings),
+            'opencnam'    => new CnamOpencnam($settings),
+            'telnyx'      => new CnamTelnyx($settings),
+            'twilio'      => new CnamTwilio($settings),
+            'vonage'      => new CnamVonage($settings),
+            'signalwire'  => new CnamSignalwire($settings),
+            'numverify'   => new CnamNumverify($settings),
+            'abstractapi' => new CnamAbstractapi($settings),
+            'custom'      => new CnamCustom($settings),
+            default       => null,
         };
     }
 

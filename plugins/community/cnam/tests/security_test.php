@@ -57,6 +57,9 @@ foreach (['127.0.0.1','::1'] as $ip) {
     ob_start();$handler('lookup',$settings);$out=ob_get_clean();
     check(http_response_code()===200 && $out==='TEST NAME','Authenticated loopback lookup failed');
 }
+$_SERVER=['REMOTE_ADDR'=>'127.0.0.1','REQUEST_METHOD'=>'GET','HTTP_AUTHORIZATION'=>'Basic '.base64_encode('cnam:'.PluginManager::$token)];
+ob_start();$handler('lookup',$settings);$out=ob_get_clean();
+check($out==='TEST NAME','Basic loopback authentication failed');
 $db->userName='Local Person';
 check(Cnam::lookupLocal($db,'1001')==='Local Person','Active user lookup failed');
 $db->userName=false;$db->smsName='SMS Person';
@@ -71,6 +74,6 @@ PluginManager::$token='';$sync('cnam',[]);
 check(strlen(PluginManager::$token)===64,'Missing generated token');
 $token=PluginManager::$token;$sync('cnam',[]);
 check(PluginManager::$token===$token,'Apply unexpectedly rotated token');
-check(str_contains($conf,'X-CNAM-Token: '.$token),'Dialplan token missing');
-check(str_contains($conf,'Set(CURLOPT(httpheader)=)'), 'Token header must be cleared after lookup');
+check(str_contains($conf,'CURLOPT(userpwd)=cnam:'.$token),'Dialplan token missing');
+check(str_contains($conf,'Set(CURLOPT(userpwd)=)'), 'Token header must be cleared after lookup');
 echo "Passed $count CNAM security/integration checks\n";

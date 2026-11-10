@@ -5,7 +5,7 @@ name: Community catalog
 on:
   push:
     branches: [main]
-    paths: ['plugins/community/**', 'scripts/build-catalog.php']
+    paths: ['plugins/community/**', 'scripts/build-catalog.php', '.github/workflows/catalog.yml']
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,43 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-only
+          MYSQL_DATABASE: plugins_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      SMS_TEST_DSN: mysql:host=127.0.0.1;dbname=plugins_test
+      SMS_TEST_USER: root
+      SMS_TEST_PASSWORD: test-only
+      AUTODIAL_TEST_DSN: mysql:host=127.0.0.1;dbname=plugins_test
+      AUTODIAL_TEST_USER: root
+      AUTODIAL_TEST_PASSWORD: test-only
     steps:
       - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: curl, mbstring, pdo_mysql, zip
+          coverage: none
+      - name: Validate before publishing
+        run: |
+          find plugins/community -name '*.php' -print0 | xargs -0 -n1 php -l
+          php plugins/community/provider-templates/tests/validate.php
+          php plugins/community/cnam/tests/cnam_test.php
+          php plugins/community/cnam/tests/security_test.php
+          php plugins/community/sms/tests/providers.php
+          php plugins/community/sms/tests/media_security.php
+          php plugins/community/sms/tests/receive.php
+          php plugins/community/sms/tests/concurrent_receive.php
+          php plugins/community/ai-voicemail/tests/handler.php
+          php plugins/community/auto-dialer/tests/database.php
+          php plugins/community/ai-assistant/tests/console.php
       - name: Build
         run: php scripts/build-catalog.php dist
       - name: Publish

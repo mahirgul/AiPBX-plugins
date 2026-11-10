@@ -1,0 +1,39 @@
+name: Auto-dialer plugin
+
+on:
+  push:
+    paths: ['plugins/community/auto-dialer/**', '.github/workflows/auto-dialer.yml']
+  pull_request:
+    paths: ['plugins/community/auto-dialer/**', '.github/workflows/auto-dialer.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-only
+          MYSQL_DATABASE: autodial_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      AUTODIAL_TEST_DSN: mysql:host=127.0.0.1;dbname=autodial_test
+      AUTODIAL_TEST_USER: root
+      AUTODIAL_TEST_PASSWORD: test-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: curl, mbstring, pdo_mysql
+          coverage: none
+      - name: Syntax
+        run: find plugins/community/auto-dialer -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Database and call lifecycle
+        run: php plugins/community/auto-dialer/tests/database.php

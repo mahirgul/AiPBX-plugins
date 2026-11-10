@@ -83,3 +83,9 @@ php plugins/community/sms/tests/concurrent_receive.php
 Media policy tests use a controlled transport; receipt/concurrency tests use real MySQL/InnoDB.
 The receipt test uses temporary tables; the concurrency test creates and removes randomly named test
 tables. These checks do not send real SMS/MMS or verify a paid provider account.
+
+### 1.2.1
+
+Security update: rejects private/internal MMS download targets, validates redirects and DNS addresses,
+and bounds streamed downloads. Fixes duplicate message handling per destination, including concurrent
+retries. Existing 1.2.0 installations receive an update offer when this package is published to the catalog.

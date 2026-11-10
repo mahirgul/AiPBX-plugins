@@ -1,0 +1,76 @@
+{
+    "slug": "ai-voicemail",
+    "name": "AI Voicemail Transcription & Executive Summary",
+    "name_i18n": {
+        "tr": "AI Sesli Posta Transkript ve Özetleyici",
+        "en": "AI Voicemail Transcription & Executive Summary"
+    },
+    "version": "1.1.0",
+    "author": "AiPBX Official Team",
+    "category": "ai",
+    "icon": "fas fa-voicemail",
+    "icon_style": "color: #8b5cf6;",
+    "description": "Summarize completed voicemail transcriptions. Requires voicemail transcription enabled under AI → Cloud services → Voicemail; optionally uses an OpenAI-compatible LLM for a custom summary.",
+    "description_i18n": {
+        "en": "Summarize completed voicemail transcriptions. Requires voicemail transcription enabled under AI → Cloud services → Voicemail; optionally uses an OpenAI-compatible LLM for a custom summary."
+    },
+    "scopes": [],
+    "hooks": {
+        "events": [
+            "voicemail.transcribed"
+        ],
+        "admin_page": {
+            "group": "ai"
+        }
+    },
+    "settings_schema": [
+        {
+            "key": "api_base_url",
+            "type": "text",
+            "default": "https://api.openai.com/v1",
+            "placeholder": "https://api.openai.com/v1",
+            "label": "OpenAI-Compatible API Base URL",
+            "label_i18n": {
+                "tr": "OpenAI Uyumlu API Sunucu Adresi (Base URL)"
+            },
+            "help": "Optional OpenAI-compatible LLM endpoint. Transcription is configured in AI → Cloud services → Voicemail."
+        },
+        {
+            "key": "api_key",
+            "type": "password",
+            "secret": true,
+            "default": "",
+            "label": "API Key (Bearer Token)",
+            "label_i18n": {
+                "tr": "API Anahtarı (Bearer Token)"
+            }
+        },
+        {
+            "key": "llm_model",
+            "type": "text",
+            "default": "gpt-4o-mini",
+            "placeholder": "gpt-4o-mini / llama-3.3-70b-versatile",
+            "label": "Summarization LLM Model",
+            "label_i18n": {
+                "tr": "Özetleme LLM Modeli"
+            }
+        },
+        {
+            "key": "summary_language",
+            "type": "select",
+            "default": "tr",
+            "options": {
+                "tr": "Türkçe (Turkish)",
+                "en": "English (İngilizce)",
+                "auto": "Auto-detect (Otomatik)"
+            },
+            "label": "Summary Output Language",
+            "label_i18n": {
+                "tr": "Özet Çıktı Dili"
+            }
+        }
+    ],
+    "type": "community",
+    "author_url": "https://github.com/mahirgul/aipbx-plugins/tree/main/plugins/community/ai-voicemail",
+    "requires_aipbx": "1.72.12"
+}

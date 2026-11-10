@@ -144,13 +144,19 @@ $assert($signalwire->configured(), 'SignalWire is configured when space, project
 CnamProvider::$http = static function (string $method, string $url, array $headers, ?string $body, int $timeout): array {
     if (str_contains($url, 'example.signalwire.com/api/relay/rest/lookup/phone_number/%2B12125551234')) {
         return [200, json_encode([
-            'cnam' => ['name' => 'SIGNALWIRE CLIENT'],
+            'cnam' => ['caller_id' => 'SIGNALWIRE CLIENT'],
         ])];
     }
     return [404, ''];
 };
 $swName = $signalwire->lookup('+12125551234');
 $assert($swName === 'SIGNALWIRE CLIENT', 'SignalWire resolves caller name: ' . var_export($swName, true));
+
+// Official response field: https://signalwire.com/docs/apis/rest/phone-number-lookup/lookup-phone-number
+CnamProvider::$http = static fn(): array => [200, '{"cnam":{"caller_id":null}}'];
+$assert($signalwire->lookup('+12125551234') === null, 'SignalWire absent caller ID returns no name');
+CnamProvider::$http = static fn(): array => [200, '{"cnam":{"caller_id":"UNKNOWN"}}'];
+$assert($signalwire->lookup('+12125551234') === null, 'SignalWire generic caller ID is ignored');
 
 // 8. NumVerify Provider tests
 $numverify = new CnamNumverify([

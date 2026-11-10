@@ -5,7 +5,7 @@
         "en": "Caller Name (CNAM)",
         "tr": "Arayan Adı (CNAM)"
     },
-    "version": "1.1.0",
+    "version": "1.1.1",
     "requires_aipbx": "1.72.12",
     "author": "AiPBX community",
     "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/cnam",

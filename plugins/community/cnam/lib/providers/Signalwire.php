@@ -65,7 +65,7 @@ final class CnamSignalwire extends CnamProvider
                 return null;
             }
 
-            $name = $data['cnam']['name'] ?? $data['cnam']['caller_name'] ?? $data['caller_name'] ?? null;
+            $name = $data['cnam']['caller_id'] ?? $data['cnam']['name'] ?? $data['cnam']['caller_name'] ?? $data['caller_name'] ?? null;
             if (is_string($name) && $name !== '') {
                 return self::sanitizeName($name);
             }

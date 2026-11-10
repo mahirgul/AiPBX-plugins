@@ -1,0 +1,22 @@
+name: AI Assistant plugin
+on:
+  push:
+    paths: ['plugins/community/ai-assistant/**', '.github/workflows/ai-assistant.yml']
+  pull_request:
+    paths: ['plugins/community/ai-assistant/**', '.github/workflows/ai-assistant.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: curl, mbstring
+          coverage: none
+      - name: Syntax
+        run: find plugins/community/ai-assistant -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Preview and API security
+        run: php plugins/community/ai-assistant/tests/console.php

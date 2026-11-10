@@ -4,8 +4,7 @@ Catalog of plugins for [AiPBX](https://github.com/mahirgul/AiPBX) — the open-s
 and the home of **community plugins**.
 
 - **Bundled plugins ship with AiPBX itself** (the [`plugins/`](https://github.com/mahirgul/AiPBX/tree/main/plugins)
-  folder of the main repository): the official plugins and the community plugin `ai-assistant` by
-  [@shido6](https://github.com/shido6) (his signaling capture and call quality are part of AiPBX itself since 1.50.8/1.50.9). They are released and tested together
+  folder of the main repository). They are released and tested together
   with the PBX, so they are not copied here. Report their bugs and send their fixes to the main repository.
 - **Community plugins live here**, under [`plugins/community/<slug>/`](plugins/community/).
 
@@ -20,18 +19,18 @@ Enable them on **Integrations → Plugins** in the portal.
 | **Cloud AI services** | [`ai-cloud`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-cloud) | `ai` | Official | Cloud AI providers in one place: Gemini/Gemma, OpenAI, Azure, Deepgram, ElevenLabs, Amazon Polly, Groq, NVIDIA NIM, Qwen or any OpenAI-compatible service (speech, speech to text, language models). |
 | **Local AI models** | [`ai-models`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-models) | `ai` | Official | AI on the PBX itself, offline: Turkish EMA Lightning and Piper voices, Kokoro English voices, Vosk and Whisper speech recognition. |
 | **Cloud TTS (announcement studio)** | [`ai-tts`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-tts) | `ai` | Official | Text to speech for IVR and queue announcements with cloud or local engines; saves the result as an announcement. |
-| **Voicemail transcription** | [`ai-voicemail`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-voicemail) | `ai` | Official | Transcribes and summarises voicemail messages. |
 | **AI applications** | [`ai-apps`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-apps) | `ai` | Official | AI applications with their own numbers that answer calls, do their job and pass the call on (usable as IVR / route destinations). |
-| **Auto dialer & AMD campaigns** | [`auto-dialer`](https://github.com/mahirgul/AiPBX/tree/main/plugins/auto-dialer) | `integration` | Official | Outbound campaigns with answering machine detection, queue free-agent pacing and voicemail drop. |
 | **Website call widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | "Call us" buttons for websites over WebRTC, callback form, WordPress plugin. |
 | **Sign in with Google** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google Workspace / Gmail sign-in (OAuth 2.0) for the portal and the mobile apps. |
 | **Microsoft Teams** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing: AiPBX as the SBC for Microsoft Teams, plus call webhooks. |
-| **Dialplan editor / AI assistant** | [`ai-assistant`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-assistant) | `ai` | Community — [@shido6](https://github.com/shido6) | Plain-language PBX changes with a preview before they are applied (`/assistant`). |
 
 ## 🌐 Community plugins (this repository)
 
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
+| **Auto Dialer & AMD Campaigns** | [`auto-dialer`](plugins/community/auto-dialer/) | `integration` | AiPBX | Outbound campaigns, AMD and queue pacing. AiPBX 1.72.12+. |
+| **AI PBX Assistant** | [`ai-assistant`](plugins/community/ai-assistant/) | `ai` | [@shido6](https://github.com/shido6) | Preview and confirm REST API requests in Turkish or English. AiPBX 1.72.12+. |
+| **AI Voicemail** | [`ai-voicemail`](plugins/community/ai-voicemail/) | `ai` | AiPBX | Summaries and transcripts of completed voicemail transcriptions. AiPBX 1.72.12+. |
 | **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |
 | **SMS / MMS** | [`sms`](plugins/community/sms/) | `integration` | Community | Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms; the users a number is given to answer them. AiPBX 1.71+. |
 

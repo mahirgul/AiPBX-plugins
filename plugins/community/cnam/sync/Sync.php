@@ -26,11 +26,12 @@ return static function (string $slug, array $settings): void {
         $conf .= " same => n,GotoIf(\$[\"\${CALLERID(name)}\" != \"\" & \"\${CALLERID(name)}\" != \"\${CALLERID(num)}\"]?done)\n";
     }
 
-    $conf .= " same => n,Set(CURLOPT(httpheader)=X-CNAM-Token: {$token})\n"
+    $conf .= " same => n,Set(CURLOPT(httpauth)=basic)\n"
+        . " same => n,Set(CURLOPT(userpwd)=cnam:{$token})\n"
         . " same => n,Set(CURLOPT(conntimeout)={$timeout})\n"
         . " same => n,Set(CURLOPT(httptimeout)={$timeout})\n"
         . " same => n,Set(LOCAL(cname)=\${CURL(http://127.0.0.1/api/plugins/cnam/lookup?num=\${LOCAL(cnum)})})\n"
-        . " same => n,Set(CURLOPT(httpheader)=)\n"
+        . " same => n,Set(CURLOPT(userpwd)=)\n"
         . " same => n,GotoIf(\$[\"\${LOCAL(cname)}\" = \"\"]?done)\n"
         . " same => n,Set(CALLERID(name)=\${LOCAL(cname)})\n"
         . " same => n,NoOp(CNAM lookup success: \${CALLERID(name)})\n"

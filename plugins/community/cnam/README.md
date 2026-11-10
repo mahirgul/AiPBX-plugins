@@ -25,3 +25,9 @@ Requires AiPBX 1.72.12 or newer, including the inbound CNAM hook. Apply generate
 Enable the Community Catalog in AiPBX under **Settings → Plugins**, then install **Caller Name (CNAM)**.
 
 Configure your provider API key under **Settings → Plugins → Caller Name (CNAM)** and click **Apply Changes**.
+
+### 1.1.1
+
+Fix SignalWire lookup parsing to read the documented `cnam.caller_id` response field.
+
+Asterisk requests use HTTP Basic credentials on loopback and clear the scalar `userpwd` option afterward. Secret custom HTTP headers are not generated because Asterisk accumulates `httpheader` values. Existing custom-token headers remain accepted for compatibility.

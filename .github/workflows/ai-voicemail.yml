@@ -1,0 +1,22 @@
+name: AI Voicemail plugin
+on:
+  push:
+    paths: ['plugins/community/ai-voicemail/**', '.github/workflows/ai-voicemail.yml']
+  pull_request:
+    paths: ['plugins/community/ai-voicemail/**', '.github/workflows/ai-voicemail.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: curl, mbstring
+          coverage: none
+      - name: Syntax
+        run: find plugins/community/ai-voicemail -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Events
+        run: php plugins/community/ai-voicemail/tests/handler.php

@@ -79,14 +79,14 @@ abstract class CnamProvider
     }
 
     /** Calls the provider; returns [int $statusCode, string $body]. */
-    protected function request(string $method, string $url, array $headers = [], ?string $body = null, int $timeout = 3): array
+    protected function request(string $method, string $url, array $headers = [], ?string $body = null, int $timeout = 1): array
     {
         $http = self::$http ?? [self::class, 'curl'];
         return $http($method, $url, $headers, $body, $timeout);
     }
 
     /** @return array{0: int, 1: string} */
-    public static function curl(string $method, string $url, array $headers, ?string $body, int $timeout = 3): array
+    public static function curl(string $method, string $url, array $headers, ?string $body, int $timeout = 1): array
     {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -94,7 +94,7 @@ abstract class CnamProvider
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => $timeout,
-            CURLOPT_CONNECTTIMEOUT => 2,
+            CURLOPT_CONNECTTIMEOUT => 1,
             CURLOPT_SSL_VERIFYPEER => true,
         ]);
         if ($body !== null) {
@@ -104,10 +104,8 @@ abstract class CnamProvider
         $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         if ($answer === false) {
             $err = curl_error($ch);
-            curl_close($ch);
             throw new \RuntimeException('CNAM HTTP error: ' . $err);
         }
-        curl_close($ch);
         return [$code, (string) $answer];
     }
 }

@@ -15,6 +15,18 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/Cnam.php';
 
 return static function (string $subPath, array $settings): void {
+    // Do not trust forwarded headers; only Asterisk on this host may use this endpoint.
+    $token = PluginManager::getSetting('cnam', '_lookup_token');
+    if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)
+        || $token === '' || !hash_equals($token, (string) ($_SERVER['HTTP_X_CNAM_TOKEN'] ?? ''))) {
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        return;
+    }
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
+        http_response_code(405);
+        return;
+    }
     $parts = explode('/', trim($subPath, '/'));
     $action = $parts[0] ?? '';
 

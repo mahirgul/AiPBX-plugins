@@ -17,4 +17,6 @@ jobs:
       - name: Syntax
         run: find plugins/community/cnam -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Providers & Unit Tests
-        run: php plugins/community/cnam/tests/cnam_test.php
+        run: |
+          php plugins/community/cnam/tests/cnam_test.php
+          php plugins/community/cnam/tests/security_test.php

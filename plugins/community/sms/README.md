@@ -56,3 +56,30 @@ providers are untried with live accounts. Reports are welcome on #152.
 
 One file in `lib/providers/` that extends `SmsProvider` (`lib/Provider.php`): `send()`, `inbound()`,
 `verify()`, and its settings in `plugin.json`. Add its cases to `tests/providers.php`.
+
+
+### Receipt and media safety
+
+Incoming message IDs are checked per receiving number. A short InnoDB row lock serializes duplicate
+receipts; media downloads and notifications run after the transaction. Existing tables need no schema
+change. Messages without provider IDs cannot be reliably deduplicated and are stored individually.
+
+Media URLs must use HTTPS on port 443 and resolve entirely to public addresses. Each redirect is
+checked again, DNS addresses are pinned for the connection, provider credentials are recalculated for
+the destination, and downloads stop at 5 MB. Private media servers are intentionally rejected. A failed
+attachment is recorded on the message without discarding its text; automatic attachment retry is not
+implemented.
+
+Regression checks (PHP 8.5 with curl, mbstring and pdo_mysql):
+
+```sh
+php plugins/community/sms/tests/providers.php
+php plugins/community/sms/tests/media_security.php
+# Set SMS_TEST_DSN, SMS_TEST_USER and SMS_TEST_PASSWORD for an isolated *_test database.
+php plugins/community/sms/tests/receive.php
+php plugins/community/sms/tests/concurrent_receive.php
+```
+
+Media policy tests use a controlled transport; receipt/concurrency tests use real MySQL/InnoDB.
+The receipt test uses temporary tables; the concurrency test creates and removes randomly named test
+tables. These checks do not send real SMS/MMS or verify a paid provider account.

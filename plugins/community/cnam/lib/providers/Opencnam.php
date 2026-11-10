@@ -46,7 +46,7 @@ final class CnamOpencnam extends CnamProvider
         ]);
 
         try {
-            [$code, $body] = $this->request('GET', $url, [], null, 3);
+            [$code, $body] = $this->request('GET', $url, [], null, 1);
             if ($code !== 200 || $body === '') {
                 return null;
             }

@@ -6,16 +6,16 @@
         "tr": "Arayan Adı (CNAM)"
     },
     "version": "1.0.0",
-    "requires_aipbx": "1.72.0",
+    "requires_aipbx": "1.72.12",
     "author": "AiPBX community",
     "author_url": "https://github.com/mahirgul/AiPBX-plugins/tree/main/plugins/community/cnam",
     "type": "community",
     "category": "integration",
     "icon": "fas fa-id-card",
     "icon_style": "color: #0284c7;",
-    "description": "Caller ID name lookup for inbound calls: checks phonebook & contacts, then queries BulkVS, OpenCNAM or custom URL with local caching to reduce costs.",
+    "description": "Caller ID name lookup for inbound calls: checks active extensions & SMS contacts, then queries BulkVS, OpenCNAM or custom URL with local caching to reduce costs.",
     "description_i18n": {
-        "en": "Caller ID name lookup for inbound calls: checks phonebook & contacts, then queries BulkVS, OpenCNAM or custom URL with local caching to reduce costs.",
+        "en": "Caller ID name lookup for inbound calls: checks active extensions & SMS contacts, then queries BulkVS, OpenCNAM or custom URL with local caching to reduce costs.",
         "tr": "Gelen aramalarda arayan adı sorgulaması: önce dahili rehberi kontrol eder, ardından BulkVS, OpenCNAM veya özel URL ile sorgulayıp maliyeti düşürmek için önbelleğe alır."
     },
     "tables": [

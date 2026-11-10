@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/Provider.php';
+require_once __DIR__ . '/Media.php';
 foreach (glob(__DIR__ . '/providers/*.php') ?: [] as $providerFile) {
     require_once $providerFile;
 }
@@ -136,24 +137,39 @@ final class Sms
     public static function receive(SmsProvider $provider, array $request, array $settings = []): int
     {
         $db = getDB();
-        $find = $db->prepare('SELECT id FROM plg_sms_numbers WHERE number = ? AND provider = ?');
-        $seen = $db->prepare("SELECT 1 FROM plg_sms_messages WHERE provider_id = ? AND direction = 'in' LIMIT 1");
+        $find = $db->prepare('SELECT id FROM plg_sms_numbers WHERE number = ? AND provider = ? FOR UPDATE');
+        $seen = $db->prepare("SELECT 1 FROM plg_sms_messages WHERE number_id = ? AND provider_id = ? AND direction = 'in' LIMIT 1 FOR UPDATE");
         $new = 0;
         foreach ($provider->inbound($request) as $m) {
-            $find->execute([$m['to'], $provider::id()]);
-            $numberId = (int) $find->fetchColumn();
-            if ($numberId === 0 || $m['from'] === '') {
-                continue;
-            }
-            if ($m['id'] !== '') {
-                $seen->execute([$m['id']]);
-                if ($seen->fetchColumn()) {
-                    continue; // providers retry; keep one copy
+            // Serialize receipt for this destination using its existing InnoDB row. No DDL is
+            // needed on upgrade, and concurrent retries cannot both pass the duplicate check.
+            $db->beginTransaction();
+            try {
+                $find->execute([$m['to'], $provider::id()]);
+                $numberId = (int) $find->fetchColumn();
+                if ($numberId === 0 || $m['from'] === '') {
+                    $db->rollBack();
+                    continue;
                 }
+                $providerId = (string) $m['id'];
+                if (mb_strlen($providerId) > 100) {
+                    $providerId = 'sha256:' . hash('sha256', $providerId);
+                }
+                if ($providerId !== '') {
+                    $seen->execute([$numberId, $providerId]);
+                    if ($seen->fetchColumn()) {
+                        $db->rollBack();
+                        continue;
+                    }
+                }
+                $db->prepare("INSERT INTO plg_sms_messages (number_id, peer, direction, body, status, provider_id) VALUES (?, ?, 'in', ?, 'received', ?)")
+                    ->execute([$numberId, $m['from'], mb_substr($m['text'], 0, 5000), $providerId]);
+                $messageId = (int) $db->lastInsertId();
+                $db->commit();
+            } catch (\Throwable $e) {
+                if ($db->inTransaction()) { $db->rollBack(); }
+                throw $e;
             }
-            $db->prepare("INSERT INTO plg_sms_messages (number_id, peer, direction, body, status, provider_id) VALUES (?, ?, 'in', ?, 'received', ?)")
-                ->execute([$numberId, $m['from'], mb_substr($m['text'], 0, 5000), mb_substr($m['id'], 0, 100)]);
-            $messageId = (int) $db->lastInsertId();
             foreach (array_slice($m['media'], 0, 10) as $url) {
                 self::fetchMedia($provider, $messageId, $url);
             }
@@ -241,19 +257,7 @@ final class Sms
     private static function fetchMedia(SmsProvider $provider, int $messageId, string $url): void
     {
         try {
-            if (!str_starts_with($url, 'https://')) {
-                throw new \RuntimeException('not https');
-            }
-            $ch = curl_init($url);
-            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 3,
-                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS, CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS, CURLOPT_TIMEOUT => 8,
-                CURLOPT_HTTPHEADER => $provider->mediaHeaders($url), CURLOPT_MAXFILESIZE => self::MAX_MEDIA_BYTES]);
-            $data = curl_exec($ch);
-            $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-            $type = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-            if (!is_string($data) || $code !== 200 || strlen($data) > self::MAX_MEDIA_BYTES) {
-                throw new \RuntimeException("HTTP {$code}");
-            }
+            [$type, $data] = SmsMedia::download($provider, $url, self::MAX_MEDIA_BYTES);
             self::storeMedia($messageId, $type ?: 'application/octet-stream', basename((string) parse_url($url, PHP_URL_PATH)), $data);
         } catch (\Throwable $e) {
             getDB()->prepare("UPDATE plg_sms_messages SET error = ? WHERE id = ?")->execute([mb_substr('Attachment not fetched: ' . $e->getMessage(), 0, 255), $messageId]);

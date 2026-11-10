@@ -37,26 +37,11 @@ final class Cnam
         // 1. Extensions table
         try {
             $stmt = $db->prepare(
-                'SELECT display_name FROM pbx_extensions
-                 WHERE is_active = 1 AND (extension_number = ? OR caller_id_number = ?)
+                'SELECT full_name FROM sys_users
+                 WHERE is_active = 1 AND (extension = ? OR cid_external = ? OR cid_external = ?)
                  LIMIT 1'
             );
-            $stmt->execute([$digits, $digits]);
-            $name = $stmt->fetchColumn();
-            if (is_string($name) && trim($name) !== '') {
-                return CnamProvider::sanitizeName($name);
-            }
-        } catch (\Throwable $ignore) {
-        }
-
-        // 2. Central phonebook (if exists)
-        try {
-            $stmt = $db->prepare(
-                'SELECT name FROM pbx_phonebook
-                 WHERE phone_number = ? OR phone_number = ? OR mobile_number = ?
-                 LIMIT 1'
-            );
-            $stmt->execute([$number, $digits, $digits]);
+            $stmt->execute([$digits, $digits, CnamProvider::e164($number)]);
             $name = $stmt->fetchColumn();
             if (is_string($name) && trim($name) !== '') {
                 return CnamProvider::sanitizeName($name);
@@ -66,7 +51,7 @@ final class Cnam
 
         // 3. SMS contacts table (if SMS plugin is installed)
         try {
-            $stmt = $db->prepare('SELECT name FROM plg_sms_contacts WHERE phone_number = ? LIMIT 1');
+            $stmt = $db->prepare('SELECT name FROM plg_sms_contacts WHERE phone = ? LIMIT 1');
             $stmt->execute([CnamProvider::e164($number)]);
             $name = $stmt->fetchColumn();
             if (is_string($name) && trim($name) !== '') {
@@ -187,6 +172,9 @@ final class Cnam
     {
         $start = hrtime(true);
         $number = trim($rawNumber);
+        if (!preg_match('/^\+?[0-9]{3,15}$/D', $number)) {
+            return ['name' => null, 'source' => 'none', 'latency_ms' => 0];
+        }
         if ($number === '') {
             return ['name' => null, 'source' => 'none', 'latency_ms' => 0];
         }

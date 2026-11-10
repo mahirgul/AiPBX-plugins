@@ -2,9 +2,9 @@ name: SMS plugin
 
 on:
   push:
-    paths: ['plugins/community/sms/**']
+    paths: ['plugins/community/sms/**', '.github/workflows/sms.yml']
   pull_request:
-    paths: ['plugins/community/sms/**']
+    paths: ['plugins/community/sms/**', '.github/workflows/sms.yml']
 
 permissions:
   contents: read
@@ -12,9 +12,34 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-only
+          MYSQL_DATABASE: sms_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      SMS_TEST_DSN: mysql:host=127.0.0.1;dbname=sms_test
+      SMS_TEST_USER: root
+      SMS_TEST_PASSWORD: test-only
     steps:
       - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: curl, mbstring, pdo_mysql
+          coverage: none
       - name: Syntax
         run: find plugins/community/sms -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Providers
         run: php plugins/community/sms/tests/providers.php
+      - name: Media security
+        run: php plugins/community/sms/tests/media_security.php
+      - name: Database receipt and concurrency
+        run: |
+          php plugins/community/sms/tests/receive.php
+          php plugins/community/sms/tests/concurrent_receive.php

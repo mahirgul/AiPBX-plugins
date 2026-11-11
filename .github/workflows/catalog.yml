@@ -52,11 +52,14 @@ jobs:
           php plugins/community/auto-dialer/tests/database.php
           php plugins/community/ai-assistant/tests/console.php
       - name: Build
+        env:
+          CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}
+          CATALOG_REQUIRE_SIGNATURE: '1'
         run: php scripts/build-catalog.php dist
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view catalog >/dev/null 2>&1 || gh release create catalog --title "Community plugin catalog" \
-            --notes "Built by CI from plugins/community: one .zip per plugin and catalog.json. AiPBX installs from here." --latest=false
+            --notes "Built by CI from plugins/community: one .zip per plugin, catalog.json and its signature. AiPBX installs from here." --latest=false
           gh release upload catalog dist/* --clobber

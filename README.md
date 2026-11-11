@@ -39,6 +39,20 @@ and install or update them there; the CI of this repository publishes them on th
 [`catalog`](https://github.com/mahirgul/aipbx-plugins/releases/tag/catalog). Older versions: upload the
 plugin's folder as a `.zip`.
 
+**Signed catalog:** CI signs `catalog.json` with an Ed25519 key that is in no repository (the
+Actions secret `CATALOG_SIGNING_KEY`) and publishes the signature as `catalog.json.sig`. AiPBX 1.74+
+uses no catalog without a valid signature, and none older than the one it already has. The public key
+is `zHUKaO/y9dxwJhPqfYOXA+S0Apw4Fu4oUPN5Jpyd6Bc=`. To check by hand:
+
+```bash
+php -r '$d = "https://github.com/mahirgul/aipbx-plugins/releases/download/catalog/";
+var_dump(sodium_crypto_sign_verify_detached(base64_decode(trim(file_get_contents($d . "catalog.json.sig"))),
+    file_get_contents($d . "catalog.json"), base64_decode("zHUKaO/y9dxwJhPqfYOXA+S0Apw4Fu4oUPN5Jpyd6Bc=")));'
+```
+
+The signature says the list came from this repository's maintainer. It is not a review of what a
+plugin does.
+
 **Starting a plugin?** [`examples/sample-plugin`](examples/sample-plugin/) uses every hook in a few lines and
 does not touch calls: copy it, change the slug and delete what you do not need.
 

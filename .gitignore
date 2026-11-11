@@ -8,3 +8,6 @@ vendor/
 .vscode/
 *.swp
 dist/
+
+# Catalog signing key (never committed; the copy CI uses is the Actions secret CATALOG_SIGNING_KEY)
+secrets/

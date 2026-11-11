@@ -40,4 +40,21 @@ foreach (glob($root . '/plugins/community/*/plugin.json') ?: [] as $manifestPath
     $plugins[] = array_intersect_key($m, array_flip($keys)) + ['sha256' => hash_file('sha256', $zipPath), 'size' => filesize($zipPath)];
     echo "{$slug} {$m['version']}\n";
 }
-file_put_contents("{$out}/catalog.json", json_encode(['plugins' => $plugins], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n");
+// "generated" lets AiPBX refuse an older, once valid catalog offered again.
+$json = json_encode(['generated' => time(), 'plugins' => $plugins], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+file_put_contents("{$out}/catalog.json", $json);
+
+// catalog.json.sig: a detached Ed25519 signature of exactly these bytes. AiPBX (1.74+) holds the
+// public key and installs nothing from a catalog without a valid one; the catalog in turn names
+// the SHA-256 of every .zip. The key is the Actions secret CATALOG_SIGNING_KEY.
+$key = base64_decode((string) getenv('CATALOG_SIGNING_KEY'), true);
+if (is_string($key) && strlen($key) === SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
+    file_put_contents("{$out}/catalog.json.sig", base64_encode(sodium_crypto_sign_detached($json, $key)) . "\n");
+    echo "signed, public key " . base64_encode(sodium_crypto_sign_publickey_from_secretkey($key)) . "\n";
+} elseif (getenv('CATALOG_REQUIRE_SIGNATURE') === '1') {
+    fwrite(STDERR, "CATALOG_SIGNING_KEY is missing or not an Ed25519 secret key: the catalog would be published unsigned\n");
+    exit(1);
+} else {
+    @unlink("{$out}/catalog.json.sig");
+    echo "not signed (no CATALOG_SIGNING_KEY)\n";
+}

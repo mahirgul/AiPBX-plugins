@@ -25,6 +25,11 @@ administrators see every number. Needs AiPBX 1.71 or newer (the `user_page` hook
   conversation, at most one per conversation in 10 minutes (setting at the top; the users need an
   e-mail address and the portal's mail settings must work).
 
+Since **1.2.2**, Send immediately disables and shows **Sending…** while the form submission runs.
+Further submissions from that form are blocked. A server error renders a fresh usable form, and
+Back/Forward navigation restores the button. Provider acceptance (`sent`) is not a delivery receipt;
+separate tabs or independently submitted requests are not covered by this UI guard.
+
 ## How each provider is checked
 
 | Provider | Incoming messages | Proof checked | MMS |
@@ -88,4 +93,9 @@ tables. These checks do not send real SMS/MMS or verify a paid provider account.
 
 Security update: rejects private/internal MMS download targets, validates redirects and DNS addresses,
 and bounds streamed downloads. Fixes duplicate message handling per destination, including concurrent
-retries. Existing 1.2.0 installations receive an update offer when this package is published to the catalog.
+retries. Older installations can update through the community catalog.
+
+### 1.2.2
+
+Adds the Send pending state and repeated-submission guard described above. Provider and attachment
+security tests remain applicable; the change does not add carrier delivery receipts or alter the schema.

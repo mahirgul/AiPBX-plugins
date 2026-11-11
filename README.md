@@ -22,6 +22,8 @@ Enable them on **Integrations → Plugins** in the portal.
 | **AI applications** | [`ai-apps`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-apps) | `ai` | Official | AI applications with their own numbers that answer calls, do their job and pass the call on (usable as IVR / route destinations). |
 | **Website call widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | "Call us" buttons for websites over WebRTC, callback form, WordPress plugin. |
 | **Sign in with Google** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google Workspace / Gmail sign-in (OAuth 2.0) for the portal and the mobile apps. |
+| **OpenID Connect SSO** | [`oidc-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/oidc-auth) | `integration` | Official | Corporate sign-in through an OpenID Connect identity provider. |
+| **SAML SSO** | [`saml-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/saml-auth) | `integration` | Official | Corporate SAML 2.0 sign-in. |
 | **Microsoft Teams** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing: AiPBX as the SBC for Microsoft Teams, plus call webhooks. |
 
 ## 🌐 Community plugins (this repository)
@@ -31,8 +33,9 @@ Enable them on **Integrations → Plugins** in the portal.
 | **Auto Dialer & AMD Campaigns** | [`auto-dialer`](plugins/community/auto-dialer/) | `integration` | AiPBX | Outbound campaigns, AMD and queue pacing. AiPBX 1.72.12+. |
 | **AI PBX Assistant** | [`ai-assistant`](plugins/community/ai-assistant/) | `ai` | [@shido6](https://github.com/shido6) | Preview and confirm REST API requests in Turkish or English. AiPBX 1.72.12+. |
 | **AI Voicemail** | [`ai-voicemail`](plugins/community/ai-voicemail/) | `ai` | AiPBX | Summaries and transcripts of completed voicemail transcriptions. AiPBX 1.72.12+. |
+| **Caller Name (CNAM)** | [`cnam`](plugins/community/cnam/) | `integration` | Community | Inbound caller-name lookup with local contacts, provider lookup and caching. AiPBX 1.72.12+. |
 | **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |
-| **SMS / MMS** | [`sms`](plugins/community/sms/) | `integration` | Community | Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch or VoIP.ms; the users a number is given to answer them. AiPBX 1.71+. |
+| **SMS / MMS** | [`sms`](plugins/community/sms/) | `integration` | Community | Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch, VoIP.ms or BulkVS; the users a number is given to answer them. AiPBX 1.71+. |
 
 **Installing:** on AiPBX 1.72+, tick **Show community plugins from the catalog** on **Integrations → Plugins**
 and install or update them there; the CI of this repository publishes them on the release
@@ -64,9 +67,13 @@ does not touch calls: copy it, change the slug and delete what you do not need.
 2. In the AiPBX portal open **Integrations → Plugins → Upload Custom Plugin (`.zip`)**, upload it and click **Enable**.
    Uploading needs AiPBX **1.50.3** or newer; older versions fail with *"Failed to move extracted plugin"*.
 
-Uploaded plugins are stored in `/var/lib/aipbx/plugins/` and survive updates.
-**Do not copy plugins into `/opt/aipbx`:** that folder is the PBX's own git checkout — any change there makes
-`aipbx-update` refuse to update ("Code was modified by hand").
+Uploaded plugins are stored in `/var/lib/aipbx/plugins/` and survive core updates. Core 1.73+ moves
+previously bundled Auto Dialer, AI Assistant and AI Voicemail copies there using offline transition
+packages, preserving their state and settings. Fresh PBX installs obtain these plugins from this
+catalog. Respect the `requires_aipbx` in each plugin manifest; the upload feature's minimum version
+is not the minimum supported core version of every plugin.
+**Keep plugin installations out of `/opt/aipbx`:** it is the managed PBX checkout. Use the catalog or
+ZIP installer so plugin code stays in `/var/lib/aipbx/plugins` and core updates can manage their own files.
 
 AiPBX shows a plugin as **Official** only when it ships with AiPBX; every uploaded plugin is shown as
 **Community**, whatever its `plugin.json` says.

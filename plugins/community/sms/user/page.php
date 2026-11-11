@@ -99,7 +99,7 @@ echo uiPageHeader('fas fa-comment-sms', 'Messages');
                     </div>
                 <?php endforeach; ?>
                 </div>
-                <form method="post" enctype="multipart/form-data" class="u-mt-10">
+                <form method="post" enctype="multipart/form-data" class="u-mt-10" id="smsSendForm">
                     <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
                     <input type="hidden" name="sms_action" value="send">
                     <input type="hidden" name="number_id" value="<?php echo $nid; ?>">
@@ -111,7 +111,7 @@ echo uiPageHeader('fas fa-comment-sms', 'Messages');
                         <input type="file" name="media[]" multiple accept="image/*,video/*,audio/*">
                         <small class="u-hint">Up to <?php echo Sms::MAX_MEDIA; ?> pictures, 5 MB each; with pictures the message goes as MMS.</small>
                     </div>
-                    <div class="form-actions"><button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send</button></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary" id="smsSendButton"><i class="fas fa-paper-plane"></i> Send</button></div>
                 </form>
             <?php else: ?>
                 <p class="u-muted">Pick a conversation on the left, or write a new one.</p>
@@ -123,6 +123,26 @@ echo uiPageHeader('fas fa-comment-sms', 'Messages');
 // New messages appear by themselves: every 5 s the page asks for the newest id, and when it changed
 // it fetches itself and swaps in the conversation list and the messages; a reply being written stays.
 (function () {
+    const form = document.getElementById('smsSendForm');
+    const sendButton = document.getElementById('smsSendButton');
+    if (form && sendButton) {
+        const idleLabel = sendButton.innerHTML;
+        let sending = false;
+        form.addEventListener('submit', function (event) {
+            if (sending) { event.preventDefault(); return; }
+            sending = true;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Sending…';
+            form.setAttribute('aria-busy', 'true');
+        });
+        // A failed POST renders a fresh form. Back/forward cache restores this one.
+        window.addEventListener('pageshow', function () {
+            sending = false;
+            sendButton.disabled = false;
+            sendButton.innerHTML = idleLabel;
+            form.removeAttribute('aria-busy');
+        });
+    }
     const box = document.getElementById('smsMsgs');
     if (box) { box.scrollTop = box.scrollHeight; }
     let last = <?php echo Sms::lastId(array_keys($numbers)); ?>;

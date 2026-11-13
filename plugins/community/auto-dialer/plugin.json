@@ -5,7 +5,7 @@
         "tr": "Otomatik Dış Arama (Auto Dialer & AMD)",
         "en": "Auto Dialer & AMD Campaigns"
     },
-    "version": "1.1.0",
+    "version": "1.1.1",
     "author": "AiPBX Official Team",
     "category": "integration",
     "icon": "fas fa-phone-volume",

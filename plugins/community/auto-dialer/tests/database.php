@@ -46,4 +46,7 @@ $_SERVER['HTTP_AUTHORIZATION']='Basic '.base64_encode('autodialer:'.$token);
 ob_start();$handler('/callback',[]);$response=ob_get_clean();
 check(!empty(json_decode($response,true)['success']),'Basic loopback authentication failed');
 check(str_contains($generatedDialplan,'Set(CURLOPT(userpwd)=)'),'Callback credentials not cleared');
-echo "OK: package bootstrap, real schema, campaign pacing, stale callbacks, hangup and endpoint access\n";
+$named=AutoDialerService::createCampaign(['name'=>'Sale (Q4), 50% ${X}','dest_type'=>'extension','dest_id'=>'101','max_concurrent'=>1,'numbers_bulk'=>"15550003333"]);
+AutoDialerService::syncDialplan();
+check(str_contains($generatedDialplan,"NoOp(AutoDialer Campaign #{$named}: Sale Q4 50 X)\n"),'Campaign name not reduced to plain text in the dialplan');
+echo "OK: package bootstrap, real schema, campaign pacing, stale callbacks, hangup, endpoint access and campaign names\n";

@@ -604,7 +604,9 @@ final class AutoDialerService
         foreach ($campaigns as $c) {
             $cid = (int)$c['id'];
             $lines[] = "[aipbx-autodial-camp-{$cid}]";
-            $lines[] = "exten => s,1,NoOp(AutoDialer Campaign #{$cid}: " . toCleanAscii((string)$c['name']) . ')';
+            // Letters, digits, space and . _ + - only: anything else in a name would be read as dialplan.
+            $campName = trim((string)preg_replace('/[^A-Za-z0-9 ._+-]/', '', toCleanAscii((string)$c['name'])));
+            $lines[] = "exten => s,1,NoOp(AutoDialer Campaign #{$cid}: {$campName})";
             $lines[] = ' same => n,Answer()';
             if (!empty($c['caller_id'])) {
                 $campCid = preg_replace('/[^0-9+]/', '', (string)$c['caller_id']);

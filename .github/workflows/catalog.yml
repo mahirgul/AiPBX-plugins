@@ -44,6 +44,7 @@ jobs:
           php plugins/community/provider-templates/tests/validate.php
           php plugins/community/cnam/tests/cnam_test.php
           php plugins/community/cnam/tests/security_test.php
+          php plugins/community/ldap-sync/tests/ldap_sync_test.php
           php plugins/community/sms/tests/providers.php
           php plugins/community/sms/tests/media_security.php
           php plugins/community/sms/tests/receive.php

@@ -1,0 +1,49 @@
+{
+    "slug": "ldap-sync",
+    "name": "LDAP / Active Directory contacts",
+    "name_i18n": {
+        "en": "LDAP / Active Directory contacts",
+        "tr": "LDAP / Active Directory kişileri"
+    },
+    "version": "1.0.0",
+    "requires_aipbx": "1.77.1",
+    "author": "AiPBX",
+    "author_url": "https://github.com/mahirgul/aipbx-plugins/tree/main/plugins/community/ldap-sync",
+    "type": "community",
+    "category": "integration",
+    "icon": "fas fa-address-book",
+    "icon_style": "color: #0369a1;",
+    "description": "Reads the people of your company directory (Active Directory, OpenLDAP) into the AiPBX phonebook, so desk phones find them by name and show who is calling.",
+    "description_i18n": {
+        "en": "Reads the people of your company directory (Active Directory, OpenLDAP) into the AiPBX phonebook, so desk phones find them by name and show who is calling.",
+        "tr": "Şirket dizininizdeki (Active Directory, OpenLDAP) kişileri AiPBX rehberine alır; masa telefonları onları adıyla bulur ve arayanın adını gösterir."
+    },
+    "tables": [],
+    "scopes": [],
+    "hooks": {
+        "admin_page": {
+            "group": "integrations"
+        },
+        "worker": true
+    },
+    "settings_schema": [
+        {"key": "host", "type": "text", "default": "", "placeholder": "dc1.example.local", "label": "Directory server"},
+        {"key": "security", "type": "select", "default": "ldaps", "options": {"ldaps": "LDAPS (636)", "starttls": "LDAP + StartTLS (389)", "none": "LDAP without encryption (389, test only)"}, "label": "Connection"},
+        {"key": "port", "type": "number", "default": "", "label": "Port", "help": "Empty: 636 for LDAPS, 389 otherwise."},
+        {"key": "skip_cert_check", "type": "boolean", "default": "0", "label": "Do not check the server certificate", "help": "Only for a test directory with a self-signed certificate."},
+        {"key": "bind_dn", "type": "text", "default": "", "placeholder": "CN=aipbx-reader,OU=Service,DC=example,DC=local", "label": "User (bind DN or user@domain)", "help": "A user that can only read. Empty: anonymous."},
+        {"key": "bind_password", "type": "password", "secret": true, "default": "", "label": "Password"},
+        {"key": "base_dn", "type": "text", "default": "", "placeholder": "OU=Staff,DC=example,DC=local", "label": "Search base"},
+        {"key": "filter", "type": "text", "default": "(&(objectClass=person)(|(telephoneNumber=*)(mobile=*)))", "label": "Filter", "help": "Active Directory, people who are not disabled: (&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(|(telephoneNumber=*)(mobile=*)))"},
+        {"key": "interval_minutes", "type": "number", "default": "60", "label": "Read every (minutes)"},
+        {"key": "attr_id", "type": "text", "default": "objectGUID", "label": "Attribute: unique id", "help": "objectGUID (Active Directory) or entryUUID (OpenLDAP). Empty: the entry's DN."},
+        {"key": "attr_name", "type": "text", "default": "displayName", "label": "Attribute: name"},
+        {"key": "attr_first", "type": "text", "default": "givenName", "label": "Attribute: first name"},
+        {"key": "attr_last", "type": "text", "default": "sn", "label": "Attribute: last name"},
+        {"key": "attr_company", "type": "text", "default": "company", "label": "Attribute: company"},
+        {"key": "attr_work", "type": "text", "default": "telephoneNumber", "label": "Attribute: work phone"},
+        {"key": "attr_mobile", "type": "text", "default": "mobile", "label": "Attribute: mobile"},
+        {"key": "attr_other", "type": "text", "default": "homePhone", "label": "Attribute: other phone"},
+        {"key": "attr_mail", "type": "text", "default": "mail", "label": "Attribute: e-mail"}
+    ]
+}

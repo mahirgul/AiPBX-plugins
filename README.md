@@ -34,6 +34,7 @@ Enable them on **Integrations → Plugins** in the portal.
 | **AI PBX Assistant** | [`ai-assistant`](plugins/community/ai-assistant/) | `ai` | [@shido6](https://github.com/shido6) | Preview and confirm REST API requests in Turkish or English. AiPBX 1.72.12+. |
 | **AI Voicemail** | [`ai-voicemail`](plugins/community/ai-voicemail/) | `ai` | AiPBX | Summaries and transcripts of completed voicemail transcriptions. AiPBX 1.72.12+. |
 | **Caller Name (CNAM)** | [`cnam`](plugins/community/cnam/) | `integration` | Community | Inbound caller-name lookup with local contacts, provider lookup and caching. AiPBX 1.72.12+. |
+| **LDAP / Active Directory contacts** | [`ldap-sync`](plugins/community/ldap-sync/) | `integration` | AiPBX | People of your company directory in the PBX phonebook, for desk phones. AiPBX 1.77.1+. |
 | **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |
 | **SMS / MMS** | [`sms`](plugins/community/sms/) | `integration` | Community | Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch, VoIP.ms or BulkVS; the users a number is given to answer them. AiPBX 1.71+. |
 

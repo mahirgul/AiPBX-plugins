@@ -28,8 +28,9 @@ $buildAssistantPlan = static function (string $prompt, array $cfg) use ($isTr): 
     $baseUrl = rtrim(trim((string)($cfg['api_base_url'] ?? 'https://api.openai.com/v1')), '/');
     $apiKey = trim((string)($cfg['api_key'] ?? ''));
     $model = trim((string)($cfg['model'] ?? 'gpt-4o-mini'));
+    $privacyBlocked = function_exists('getSystemSetting') && getSystemSetting('privacy_block_cloud_ai', '0') === '1';
 
-    if ($apiKey !== '' && $baseUrl !== '' && filter_var($baseUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $baseUrl)) {
+    if (!$privacyBlocked && $apiKey !== '' && $baseUrl !== '' && filter_var($baseUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $baseUrl)) {
         $sysPrompt = <<<'SYS'
 You are the AiPBX REST API v1 Assistant. Convert the administrator's request into a single JSON object with keys:
 - "explanation": concise explanation in the user's language (Turkish or English)
@@ -37,22 +38,26 @@ You are the AiPBX REST API v1 Assistant. Convert the administrator's request int
 - "path": valid AiPBX /api/v1/* path, such as:
   - "/api/v1/system/health" (GET)
   - "/api/v1/system/apply-sync" (POST)
-  - "/api/v1/extensions" (GET or POST {"extension":"205","name":"Ahmet Yilmaz","secret":"StrongPass123!","webrtc":1})
-  - "/api/v1/queues" (GET or POST {"name":"support","strategy":"rrmemory","timeout":15,"members":["101","102"]})
-  - "/api/v1/ring-groups" (GET or POST {"group_num":"600","description":"Sales","strategy":"ringall","ring_time":20,"extensions":["101","102"]})
+  - "/api/v1/extensions" (GET or POST {"extension":"205","full_name":"Ahmet Yilmaz","sip_password":"StrongPass123!","extension_type":"sip","is_active":1})
+  - "/api/v1/queues" (GET or POST {"queue_name":"support","strategy":"rrmemory","timeout":15,"members":["101","102"]})
+  - "/api/v1/ring-groups" (GET or POST {"group_number":"600","name":"Sales","ring_strategy":"ringall","ring_timeout":20,"members":["101","102"]})
   - "/api/v1/ivrs" (GET)
   - "/api/v1/trunks" (GET)
   - "/api/v1/calls/active" (GET)
-  - "/api/v1/cdrs" (GET)
+  - "/api/v1/cdr" (GET)
 - "body": JSON object for POST/PATCH requests, or {} for GET/DELETE.
 Output ONLY valid JSON.
 SYS;
+
+        $promptForLlm = (class_exists('PrivacyService') && method_exists('PrivacyService', 'redactText'))
+            ? PrivacyService::redactText($prompt)
+            : $prompt;
 
         $payload = json_encode([
             'model' => $model !== '' ? $model : 'gpt-4o-mini',
             'messages' => [
                 ['role' => 'system', 'content' => $sysPrompt],
-                ['role' => 'user', 'content' => $prompt],
+                ['role' => 'user', 'content' => $promptForLlm],
             ],
             'temperature' => 0.1,
             'max_tokens' => 400,
@@ -102,7 +107,9 @@ SYS;
     if (preg_match('/(?:dahili|extension)\s+(\d{2,6})(?:\s+([a-zA-ZğüşıöçĞÜŞİÖÇ\s]{2,40}))?/u', $prompt, $m)
         && (str_contains($lower, 'ekle') || str_contains($lower, 'oluştur') || str_contains($lower, 'create') || str_contains($lower, 'add'))) {
         $extNum = $m[1];
-        $extName = trim($m[2] ?? ('Ext ' . $extNum));
+        $rawName = preg_replace('/(?:^|\s)(?:ekle|oluştur|olustur|create|add)(?=\s|$)/iu', ' ', (string)($m[2] ?? '')) ?? '';
+        $rawName = trim(preg_replace('/\s+/u', ' ', $rawName) ?? '');
+        $extName = $rawName !== '' ? $rawName : ('Ext ' . $extNum);
         return [
             'explanation' => $isTr
                 ? "{$extNum} numaralı ({$extName}) yeni dahili oluşturulacak."
@@ -110,10 +117,11 @@ SYS;
             'method'      => 'POST',
             'path'        => '/api/v1/extensions',
             'body'        => [
-                'extension' => $extNum,
-                'name'      => $extName,
-                'secret'    => 'AiPbx_' . bin2hex(random_bytes(16)) . '!',
-                'webrtc'    => 1,
+                'extension'      => $extNum,
+                'full_name'      => $extName,
+                'sip_password'   => 'AiPbx_' . bin2hex(random_bytes(16)) . '!',
+                'extension_type' => 'sip',
+                'is_active'      => 1,
             ],
         ];
     }
@@ -303,7 +311,8 @@ $history = PluginManager::kvList('ai-assistant', 'history', 20);
                                 <span class="badge badge-info"><?php echo htmlspecialchars((string)($v['method'] ?? 'GET')); ?></span>
                                 <code><?php echo htmlspecialchars((string)($v['path'] ?? '')); ?></code>
                             </td>
-                            <td><span class="badge badge-success">HTTP <?php echo (int)($v['status_code'] ?? 200); ?></span></td>
+                            <?php $sc = (int)($v['status_code'] ?? 200); ?>
+                            <td><span class="badge <?php echo ($sc >= 200 && $sc < 300) ? 'badge-success' : 'badge-danger'; ?>">HTTP <?php echo $sc; ?></span></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

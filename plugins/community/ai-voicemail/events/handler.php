@@ -32,8 +32,9 @@ return static function (string $eventName, array $envelope, array $settings): vo
     $llmModel = trim((string)($settings['llm_model'] ?? 'gpt-4o-mini'));
     $lang = trim((string)($settings['summary_language'] ?? 'tr'));
 
+    $privacyBlocked = function_exists('getSystemSetting') && getSystemSetting('privacy_block_cloud_ai', '0') === '1';
     $summary = $existingSummary;
-    if ($transcript !== '' && $apiKey !== '' && $baseUrl !== '' && filter_var($baseUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $baseUrl)) {
+    if (!$privacyBlocked && $transcript !== '' && $apiKey !== '' && $baseUrl !== '' && filter_var($baseUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $baseUrl)) {
         $promptText = "Voicemail from {$caller} to mailbox {$mailbox} ({$duration}s):\n{$transcript}";
 
         $langInstruction = $lang === 'tr'

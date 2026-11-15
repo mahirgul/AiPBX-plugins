@@ -49,4 +49,24 @@ check(str_contains($generatedDialplan,'Set(CURLOPT(userpwd)=)'),'Callback creden
 $named=AutoDialerService::createCampaign(['name'=>'Sale (Q4), 50% ${X}','dest_type'=>'extension','dest_id'=>'101','max_concurrent'=>1,'numbers_bulk'=>"15550003333"]);
 AutoDialerService::syncDialplan();
 check(str_contains($generatedDialplan,"NoOp(AutoDialer Campaign #{$named}: Sale Q4 50 X)\n"),'Campaign name not reduced to plain text in the dialplan');
-echo "OK: package bootstrap, real schema, campaign pacing, stale callbacks, hangup, endpoint access and campaign names\n";
+// AI campaigns: the person called reaches the AI as the caller; what it understood is kept.
+check(str_contains(end(AsteriskHelper::$commands),'extension route_'.$id.'_'),'route extension missing');
+check(preg_match('/route_\d+_\d+_\d+_15550002222@aipbx-autodial-amd$/',end(AsteriskHelper::$commands))===1,'Phone not carried to the answered leg');
+check(str_contains($generatedDialplan,'Set(__AUTODIAL_PHONE=${FILTER(0-9+,${CUT(EXTEN,_,5)})})'),'Answered leg does not know the phone');
+check(!str_contains($generatedDialplan,'Set(CALLERID(num)=${AUTODIAL_PHONE})'),'Caller changed for a non-AI destination');
+$ai=AutoDialerService::createCampaign(['name'=>'Confirm','dest_type'=>'ai_app','dest_id'=>'3','max_concurrent'=>1,'numbers_bulk'=>"15550004444"]);
+AutoDialerService::syncDialplan();
+check(str_contains($generatedDialplan,'ExecIf($["${AUTODIAL_PHONE}" != ""]?Set(CALLERID(num)=${AUTODIAL_PHONE}))'),'AI destination does not see the person called');
+check(str_contains($generatedDialplan,'&ai=${FILTER(a-z0-9_-,${AI_INTENT})}'),'AI result not reported');
+check(in_array('ai_agent',AutoDialerService::ALLOWED_DEST_TYPES,true),'External agent not a campaign destination');
+$testDB->exec("UPDATE plg_autodial_campaigns SET status='paused'");
+AutoDialerService::setCampaignStatus($ai,'running');
+AutoDialerService::tickCampaigns();
+$an=(int)$testDB->query("SELECT id FROM plg_autodial_numbers WHERE campaign_id={$ai}")->fetchColumn();
+AutoDialerService::handleCallback(['num_id'=>$an,'attempt'=>1,'event'=>'answered','amd_status'=>'HUMAN']);
+AutoDialerService::handleCallback(['num_id'=>$an,'attempt'=>1,'event'=>'hangup','duration'=>20]);          // the other leg first
+AutoDialerService::handleCallback(['num_id'=>$an,'attempt'=>1,'event'=>'hangup','duration'=>20,'ai'=>'confirm']);
+check($testDB->query("SELECT call_result FROM plg_autodial_numbers WHERE id={$an}")->fetchColumn()==='AI:confirm','AI result not stored');
+AutoDialerService::handleCallback(['num_id'=>$an,'attempt'=>1,'event'=>'hangup','ai'=>'x;DROP']);
+check($testDB->query("SELECT call_result FROM plg_autodial_numbers WHERE id={$an}")->fetchColumn()==='AI:confirm','Bad AI value stored');
+echo "OK: package bootstrap, real schema, campaign pacing, stale callbacks, hangup, endpoint access, campaign names and AI campaigns\n";

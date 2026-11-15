@@ -40,6 +40,21 @@ When a campaign's target destination is a **Call Queue (`queue`)** and **Queue F
 - 🛡️ Concurrency is automatically capped to the number of free agents so customers are never called when no agent is available to talk to them.
 
 
+## AI campaigns
+
+With an **AI Application** or an **External AI Agent** (AiPBX 1.80+) as the destination, the AI talks
+with the person called: an appointment confirmation, a payment reminder, a short survey.
+
+- The AI sees the **person called** as the caller: an AI application's lookup address gets their
+  number (`caller=`) and can answer with their name, appointment or balance; an external agent gets
+  it as `X-AiPBX-Caller`.
+- What a voice-requests application understood is stored as the number's result: `AI:<request id>`
+  (for example `AI:confirm`), `AI:none` when it understood nothing, `AI:ended` when a conversation
+  said goodbye. It shows in the number list and the export like any other result.
+
+After updating, apply the PBX configuration so the dialplan carries the number to the answered leg.
+
+
 ## Active calls and callback correlation
 
 Answered calls retain their concurrency slot until hangup; they use the `answered` status while the

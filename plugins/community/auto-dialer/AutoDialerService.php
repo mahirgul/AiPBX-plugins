@@ -23,7 +23,11 @@ final class AutoDialerService
         'ring_group',
         'announcement',
         'ai_app',
+        'ai_agent',
     ];
+
+    /** Destinations where AI talks with the person called: it should know who that is. */
+    public const AI_DEST_TYPES = ['ai_app', 'ai_agent'];
 
     /**
      * Ensure the plugin's `plg_*` tables exist.
@@ -388,14 +392,15 @@ final class AutoDialerService
                 }
 
                 $cmd = sprintf(
-                    'channel originate Local/dial_%d_%s_%d_%d@aipbx-autodial-out/n extension route_%d_%d_%d@aipbx-autodial-amd',
+                    'channel originate Local/dial_%d_%s_%d_%d@aipbx-autodial-out/n extension route_%d_%d_%d_%s@aipbx-autodial-amd',
                     $numId,
                     $phone,
                     $campId,
                     (int)$numRow['attempts'] + 1,
                     $campId,
                     $numId,
-                    (int)$numRow['attempts'] + 1
+                    (int)$numRow['attempts'] + 1,
+                    $phone
                 );
                 $res = AsteriskHelper::execCLI($cmd);
                 if (!empty($res['success'])) {
@@ -472,6 +477,13 @@ final class AutoDialerService
 
             if ((int)($params['attempt'] ?? 0) !== (int)$row['attempts'] || (int)$row['attempts'] <= 0) {
                 return ['success' => true, 'state' => 'stale_attempt'];
+            }
+            // What the AI understood (an AI application's request, "none", "_end"), stored with the
+            // result: also when the other leg's hang-up has already finished the row.
+            $ai = preg_match('/^[a-z0-9_-]{1,40}$/', (string)($params['ai'] ?? '')) ? (string)$params['ai'] : '';
+            if ($event === 'hangup' && $ai !== '' && in_array($row['status'], ['answered', 'completed'], true)) {
+                $db->prepare('UPDATE plg_autodial_numbers SET call_result = ? WHERE id = ?')
+                   ->execute([substr('AI:' . ($ai === '_end' ? 'ended' : $ai), 0, 32), $numId]);
             }
             if (!in_array($row['status'], ['dialing', 'answered'], true)) {
                 return ['success' => true, 'state' => 'already_finished'];
@@ -598,6 +610,9 @@ final class AutoDialerService
         $lines[] = ' same => n,Set(__AUTODIAL_CAMP_ID=${CUT(EXTEN,_,2)})';
         $lines[] = ' same => n,Set(__AUTODIAL_NUM_ID=${CUT(EXTEN,_,3)})';
         $lines[] = ' same => n,Set(__AUTODIAL_ATTEMPT=${CUT(EXTEN,_,4)})';
+        $lines[] = ' same => n,Set(__AUTODIAL_PHONE=${FILTER(0-9+,${CUT(EXTEN,_,5)})})';
+        // This leg's hang-up reports too, with the AI result (AI_INTENT) when an AI application talked.
+        $lines[] = ' same => n,Set(CHANNEL(hangup_handler_push)=aipbx-autodial-hangup,s,1)';
         $lines[] = ' same => n,Goto(aipbx-autodial-camp-${AUTODIAL_CAMP_ID},s,1)';
         $lines[] = '';
 
@@ -643,6 +658,10 @@ final class AutoDialerService
                 $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
             }
 
+            if (in_array((string)$c['dest_type'], self::AI_DEST_TYPES, true)) {
+                // The AI application (its lookups) and the external agent (X-AiPBX-Caller) see the person called.
+                $lines[] = ' same => n,ExecIf($["${AUTODIAL_PHONE}" != ""]?Set(CALLERID(num)=${AUTODIAL_PHONE}))';
+            }
             $destLines = buildDestinationLines((string)$c['dest_type'], (string)$c['dest_id']);
             foreach (explode("\n", (string)$destLines) as $dl) {
                 if (trim($dl) !== '') {
@@ -650,17 +669,13 @@ final class AutoDialerService
                 }
             }
             $lines[] = ' same => n,Hangup()';
-            $lines[] = "exten => h,1,Set(CURLOPT(userpwd)=autodialer:{$callbackToken})";
-            $lines[] = ' same => n,Set(CURLOPT(httpauth)=basic)';
-            $lines[] = ' same => n,Set(AD_H=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=hangup&duration=${CDR(billsec)}&uniqueid=${UNIQUEID})})';
-            $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
             $lines[] = '';
         }
 
         $lines[] = '[aipbx-autodial-hangup]';
         $lines[] = "exten => s,1,Set(CURLOPT(userpwd)=autodialer:{$callbackToken})";
         $lines[] = ' same => n,Set(CURLOPT(httpauth)=basic)';
-        $lines[] = ' same => n,Set(AD_H=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=hangup&duration=${CDR(billsec)}&uniqueid=${UNIQUEID})})';
+        $lines[] = ' same => n,Set(AD_H=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=hangup&duration=${CDR(billsec)}&uniqueid=${UNIQUEID}&ai=${FILTER(a-z0-9_-,${AI_INTENT})})})';
         $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
         $lines[] = ' same => n,Return()';
 

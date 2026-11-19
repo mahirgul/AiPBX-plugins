@@ -86,6 +86,15 @@ Numbers added before 1.3.0 are not reported, so an upgrade sends no old results.
 
 ---
 
+### 1.3.1
+
+- **Campaigns dial again.** The worker runs as `www-data`, and the Asterisk CLI does not let that user run
+  `channel originate` (AiPBX 1.73.5 and newer), so numbers stayed in "dialing" and then failed without a
+  call. Calls now start through AMI, like click-to-call.
+- The agent in the results, the webhook and the write-back is the extension (`1001`), not
+  `1001sipsip1001`.
+- The dialplan no longer sets `CURLOPT(httpauth)` (an `ERROR` line on every call on Asterisk 22).
+
 ## 🎛️ Global & Per-Campaign AMD Settings
 
 1. ⚙️ **Global AMD Timings (`System → PBX Settings → AMD`):**

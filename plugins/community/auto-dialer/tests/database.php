@@ -5,6 +5,7 @@ if (!preg_match('/dbname=([a-z0-9_]*_test)(?:;|$)/D',$dsn)) { throw new RuntimeE
 $testDB=new PDO($dsn,getenv('AUTODIAL_TEST_USER')?:'',getenv('AUTODIAL_TEST_PASSWORD')?:'',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 require __DIR__.'/host/core/PluginManager.php';
 require dirname(__DIR__).'/AutoDialerService.php';
+AutoDialerService::$originator=static function(string $ch,string $ctx,string $ex):bool{AsteriskHelper::$commands[]="channel originate {$ch} extension {$ex}@{$ctx}";return true;};
 foreach (explode(';',preg_replace('/^--.*$/m','',file_get_contents(dirname(__DIR__).'/schema.sql'))) as $sql) {
     if(trim($sql)!=='') { $testDB->exec(str_replace('CREATE TABLE IF NOT EXISTS','CREATE TEMPORARY TABLE',$sql)); }
 }

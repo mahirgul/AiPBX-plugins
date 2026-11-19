@@ -473,19 +473,13 @@ final class AutoDialerService
                     continue;
                 }
 
-                $cmd = sprintf(
-                    'channel originate Local/dial_%d_%s_%d_%d@aipbx-autodial-out/n extension route_%d_%d_%d_%s@aipbx-autodial-amd',
-                    $numId,
-                    $phone,
-                    $campId,
-                    (int)$numRow['attempts'] + 1,
-                    $campId,
-                    $numId,
-                    (int)$numRow['attempts'] + 1,
-                    $phone
+                $attempt = (int)$numRow['attempts'] + 1;
+                $ok = self::originate(
+                    sprintf('Local/dial_%d_%s_%d_%d@aipbx-autodial-out/n', $numId, $phone, $campId, $attempt),
+                    'aipbx-autodial-amd',
+                    sprintf('route_%d_%d_%d_%s', $campId, $numId, $attempt, $phone)
                 );
-                $res = AsteriskHelper::execCLI($cmd);
-                if (!empty($res['success'])) {
+                if ($ok) {
                     $originatedTotal++;
                 } else {
                     self::markAttemptFailed(
@@ -501,6 +495,52 @@ final class AutoDialerService
 
         self::reportResults();
         return $originatedTotal;
+    }
+
+    /** Tests only: fn(string $channel, string $context, string $exten): bool in place of AMI. */
+    public static ?\Closure $originator = null;
+
+    /**
+     * Starts one campaign call over AMI. The portal user may not run "channel originate" on the
+     * Asterisk CLI (cli_permissions.conf), so the worker, which runs as www-data, could not dial.
+     */
+    private static function originate(string $channel, string $context, string $exten): bool
+    {
+        if (self::$originator !== null) {
+            return (bool)(self::$originator)($channel, $context, $exten);
+        }
+        if (!defined('AMI_HOST') || !defined('AMI_USER') || !defined('AMI_PASS')) {
+            return false;
+        }
+        $fp = @fsockopen((string)AMI_HOST, defined('AMI_PORT') ? (int)AMI_PORT : 5038, $errno, $errstr, 3);
+        if (!$fp) {
+            return false;
+        }
+        stream_set_timeout($fp, 5);
+        $read = static function () use ($fp): string {
+            $msg = '';
+            while (($line = fgets($fp, 4096)) !== false) {
+                if (trim($line) === '') {
+                    if (str_contains($msg, 'Response:')) {
+                        break;
+                    }
+                    $msg = '';
+                    continue;
+                }
+                $msg .= $line;
+            }
+            return $msg;
+        };
+        fwrite($fp, "Action: Login\r\nUsername: " . AMI_USER . "\r\nSecret: " . AMI_PASS . "\r\nEvents: off\r\n\r\n");
+        $ok = str_contains($read(), 'Response: Success');
+        if ($ok) {
+            fwrite($fp, "Action: Originate\r\nChannel: {$channel}\r\nContext: {$context}\r\nExten: {$exten}\r\n"
+                . "Priority: 1\r\nTimeout: 45000\r\nAsync: true\r\n\r\n");
+            $ok = str_contains($read(), 'Response: Success');
+            fwrite($fp, "Action: Logoff\r\n\r\n");
+        }
+        fclose($fp);
+        return $ok;
     }
 
     public static function markAttemptFailed(int $numId, int $attempts, int $maxRetries, int $retryIntervalSec, string $result): void
@@ -692,7 +732,6 @@ final class AutoDialerService
         $lines[] = " same => n,Dial(Local/\${AUTODIAL_PHONE}@from-internal-pbx/n,{$dialTimeout},g)";
         $lines[] = ' same => n,GotoIf($["${DIALSTATUS}" = "ANSWER"]?done)';
         $lines[] = " same => n,Set(CURLOPT(userpwd)=autodialer:{$callbackToken})";
-        $lines[] = ' same => n,Set(CURLOPT(httpauth)=basic)';
         $lines[] = ' same => n,Set(AD_CB=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=dial_failed&dialstatus=${DIALSTATUS}&uniqueid=${UNIQUEID})})';
         $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
         $lines[] = ' same => n(done),Hangup()';
@@ -727,7 +766,6 @@ final class AutoDialerService
                 $lines[] = " same => n,AMD({$amdArgs})";
                 $lines[] = ' same => n,NoOp(AMD Result: status=${AMDSTATUS} cause=${AMDCAUSE})';
                 $lines[] = " same => n,Set(CURLOPT(userpwd)=autodialer:{$callbackToken})";
-                $lines[] = ' same => n,Set(CURLOPT(httpauth)=basic)';
                 $lines[] = ' same => n,Set(AD_CB=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=answered&amd_status=${AMDSTATUS}&amd_cause=${URIENCODE(${AMDCAUSE})}&uniqueid=${UNIQUEID})})';
                 $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
                 $lines[] = ' same => n,GotoIf($["${AMDSTATUS}" = "MACHINE"]?machine:human)';
@@ -746,7 +784,6 @@ final class AutoDialerService
                 $lines[] = ' same => n(human),NoOp(AutoDialer AMD detected HUMAN -> routing to destination)';
             } else {
                 $lines[] = " same => n,Set(CURLOPT(userpwd)=autodialer:{$callbackToken})";
-                $lines[] = ' same => n,Set(CURLOPT(httpauth)=basic)';
                 $lines[] = ' same => n,Set(AD_CB=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=answered&amd_status=BYPASSED&amd_cause=DISABLED&uniqueid=${UNIQUEID})})';
                 $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
             }
@@ -770,8 +807,10 @@ final class AutoDialerService
         $lines[] = 'exten => s,1,Set(AD_AG=${CUT(MEMBERINTERFACE,@,1)})';
         $lines[] = ' same => n,Set(AD_AG=${IF($["${AD_AG}" != ""]?${CUT(AD_AG,/,2)}:${DIALEDPEERNUMBER})})';
         $lines[] = ' same => n,Set(AD_AG=${CUT(AD_AG,@,1)})';
+        // A ringed extension is "7410-sip/sip:7410@host": keep the extension, not "7410sipsip7410".
+        $lines[] = ' same => n,Set(AD_AG=${CUT(AD_AG,/,1)})';
+        $lines[] = ' same => n,Set(AD_AG=${CUT(AD_AG,-,1)})';
         $lines[] = " same => n,Set(CURLOPT(userpwd)=autodialer:{$callbackToken})";
-        $lines[] = ' same => n,Set(CURLOPT(httpauth)=basic)';
         $lines[] = ' same => n,Set(AD_H=${CURL(http://127.0.0.1/api/plugins/auto-dialer/callback?num_id=${AUTODIAL_NUM_ID}&attempt=${AUTODIAL_ATTEMPT}&event=hangup&leg=${ARG1}&duration=${CDR(billsec)}&uniqueid=${UNIQUEID}&ai=${FILTER(a-z0-9_-,${AI_INTENT})}&agent=${FILTER(0-9A-Za-z_.-,${AD_AG})})})';
         $lines[] = ' same => n,Set(CURLOPT(userpwd)=)';
         $lines[] = ' same => n,Return()';

@@ -34,3 +34,9 @@ php plugins/community/ldap-sync/tests/ldap_sync_test.php
 ### 1.0.0
 
 - First version.
+
+### 1.0.1
+
+- Active Directory `objectGUID` values are always read as binary, so a contact keeps the same ID.
+- Only one sync runs at a time.
+- Certificate checking is set on the directory connection itself, for LDAPS and STARTTLS.

@@ -5,7 +5,7 @@
         "en": "LDAP / Active Directory contacts",
         "tr": "LDAP / Active Directory kişileri"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "requires_aipbx": "1.77.1",
     "author": "AiPBX",
     "author_url": "https://github.com/mahirgul/aipbx-plugins/tree/main/plugins/community/ldap-sync",

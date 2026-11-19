@@ -8,24 +8,26 @@ require_once dirname(__DIR__) . '/AutoDialerService.php';
 return static function (string $slug, array $settings): array {
     $isTr = (function_exists('getUserLanguage') && getUserLanguage() === 'tr');
 
-    // CSV Export download (`GET /plugins/auto-dialer?export_csv=<campaign_id>`)
-    if (!empty($_GET['export_csv'])) {
-        $campId = (int)$_GET['export_csv'];
+    // CSV Export download (`GET /plugins/auto-dialer?export_csv=<id>`, or POST export_csv from /apps/auto-dialer)
+    $exportId = (int)($_GET['export_csv'] ?? (($_POST['autodial_action'] ?? '') === 'export_csv' ? ($_POST['campaign_id'] ?? 0) : 0));
+    if ($exportId > 0) {
+        $campId = $exportId;
         $camp = AutoDialerService::getCampaign($campId);
         if ($camp) {
             if (function_exists('session_write_close')) {
                 @session_write_close();
             }
-            $rows = AutoDialerService::listNumbers($campId, 1000);
+            $rows = AutoDialerService::listNumbers($campId, 100000);
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="autodial_campaign_' . $campId . '_results.csv"');
             $out = fopen('php://output', 'w');
             if ($out !== false) {
                 fwrite($out, "\xEF\xBB\xBF");
-                fputcsv($out, ['ID', 'Phone Number', 'Contact Name', 'Notes', 'Status', 'Attempts', 'Call Result', 'AMD Status', 'AMD Cause', 'Duration (s)', 'Last Attempt']);
+                fputcsv($out, ['ID', 'External ID', 'Phone Number', 'Contact Name', 'Notes', 'Status', 'Attempts', 'Call Result', 'AMD Status', 'AMD Cause', 'Agent', 'Duration (s)', 'Last Attempt', 'Write-back error']);
                 foreach ($rows as $r) {
                     fputcsv($out, [
                         $r['id'],
+                        $r['external_id'],
                         $r['phone_number'],
                         $r['contact_name'],
                         $r['notes'],
@@ -34,8 +36,10 @@ return static function (string $slug, array $settings): array {
                         $r['call_result'],
                         $r['amd_status'],
                         $r['amd_cause'],
+                        $r['agent'],
                         $r['duration'],
                         $r['last_attempt_at'] ?? '',
+                        $r['report_error'],
                     ]);
                 }
                 fclose($out);
@@ -59,7 +63,7 @@ return static function (string $slug, array $settings): array {
 
     try {
         if ($action === 'create_campaign') {
-            $id = AutoDialerService::createCampaign($_POST);
+            $id = AutoDialerService::createCampaign(['_owner' => (int)($_SESSION['user_id'] ?? 0)] + $_POST);
             if (function_exists('writeAuditLog')) {
                 writeAuditLog('plugins', 'autodial_campaign', $id, 'Auto-dialer campaign created: ' . trim((string)($_POST['name'] ?? "#{$id}")), 'create', $_SESSION['user_id'] ?? null);
             }
@@ -102,6 +106,22 @@ return static function (string $slug, array $settings): array {
                     ? "{$added} numara kampanyaya eklendi."
                     : "{$added} phone numbers added to the campaign.",
             ];
+        }
+
+        if ($action === 'save_campaign_ext') {
+            $campId = (int)($_POST['campaign_id'] ?? 0);
+            AutoDialerService::saveCampaignExt($campId, $_POST);
+            if (function_exists('writeAuditLog')) {
+                writeAuditLog('plugins', 'autodial_campaign', $campId, "Auto-dialer campaign #{$campId}: managers / source / results changed", 'update', $_SESSION['user_id'] ?? null);
+            }
+            return ['message' => $isTr ? 'Kampanya ayarları kaydedildi.' : 'Campaign settings saved.'];
+        }
+
+        if ($action === 'import_db') {
+            $campId = (int)($_POST['campaign_id'] ?? 0);
+            $added = AutoDialerService::importFromDb($campId);
+            $err = (string)AutoDialerService::campaignExt($campId)['last_error'];
+            return $err !== '' ? ['error' => $err] : ['message' => $isTr ? "{$added} yeni numara eklendi." : "{$added} new numbers added."];
         }
 
         if ($action === 'tick_now') {

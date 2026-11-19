@@ -10,9 +10,112 @@ $isTr = (function_exists('getUserLanguage') && getUserLanguage() === 'tr');
 $h = static fn($s): string => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 
 $db = getDB();
-$campaigns = AutoDialerService::listCampaigns();
-$selectedCampId = isset($_GET['campaign_id']) ? (int)$_GET['campaign_id'] : (!empty($campaigns[0]['id']) ? (int)$campaigns[0]['id'] : 0);
+// /apps/auto-dialer (user/page.php) shows the same screen to a campaign's managers, without creating or deleting.
+$adManagerView = $adManagerView ?? false;
+$adBase = $adManagerView ? '/apps/auto-dialer' : '/plugins/auto-dialer';
+$adUser = isset($user) && is_array($user) ? $user : (array)(function_exists('getCurrentUser') ? getCurrentUser() : []);
+$campaigns = $adManagerView ? AutoDialerService::campaignsFor($adUser) : AutoDialerService::listCampaigns();
+$adIds = array_map(static fn(array $c): int => (int)$c['id'], $campaigns);
+$selectedCampId = isset($_GET['campaign_id']) ? (int)$_GET['campaign_id'] : ($adIds[0] ?? 0);
+if (!in_array($selectedCampId, $adIds, true)) {
+    $selectedCampId = $adIds[0] ?? 0;
+}
 $selectedCampaign = $selectedCampId > 0 ? AutoDialerService::getCampaign($selectedCampId) : null;
+$selectedExt = $selectedCampaign ? AutoDialerService::campaignExt($selectedCampId) : null;
+
+// Database connections (names only; AiPBX 1.80+), users and roles for the managers list.
+$adConnections = [];
+try {
+    if (class_exists('PluginData') || is_file(dirname((string)(new ReflectionClass('PluginManager'))->getFileName()) . '/PluginData.php')) {
+        require_once dirname((string)(new ReflectionClass('PluginManager'))->getFileName()) . '/PluginData.php';
+        $adConnections = PluginData::connections('auto-dialer');
+    }
+} catch (\Throwable $e) {
+}
+$adUsers = $adRoles = [];
+if (!$adManagerView) {
+    try {
+        $adUsers = $db->query("SELECT id, full_name, username FROM sys_users WHERE is_active = 1 ORDER BY full_name ASC")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $adRoles = $db->query("SELECT role_key FROM sys_roles WHERE role_key <> 'admin' ORDER BY id ASC")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    } catch (\Throwable $e) {
+    }
+}
+
+/** Number source, managers and result fields: the same on the new-campaign form and a campaign's settings. */
+$adExtFields = static function (array $ext) use ($h, $isTr, $adConnections, $adUsers, $adRoles): string {
+    $conn = static function (string $name, $selected, bool $writableOnly) use ($h, $isTr, $adConnections): string {
+        $o = '<select name="' . $name . '" class="form-control"><option value="">' . ($isTr ? '— Yok —' : '— None —') . '</option>';
+        foreach ($adConnections as $c) {
+            if ($writableOnly && !$c['allow_write']) {
+                continue;
+            }
+            $o .= '<option value="' . (int)$c['id'] . '"' . ((int)$selected === (int)$c['id'] ? ' selected' : '') . '>' . $h($c['name'] . ' (' . $c['driver'] . ')') . '</option>';
+        }
+        return $o . '</select>';
+    };
+    $mu = array_filter(explode(',', (string)$ext['manager_users']));
+    $mr = array_filter(explode(',', (string)$ext['manager_roles']));
+    ob_start(); ?>
+    <div class="u-grid-2 u-mt-12">
+        <div class="form-group">
+            <label class="form-label"><?php echo $isTr ? 'Numaralar nereden' : 'Numbers from'; ?></label>
+            <select name="source_type" class="form-control">
+                <option value="text"><?php echo $isTr ? 'Liste / CSV' : 'List / CSV'; ?></option>
+                <option value="db" <?php echo $ext['source_type'] === 'db' ? 'selected' : ''; ?> <?php echo $adConnections ? '' : 'disabled'; ?>><?php echo $isTr ? 'Dış veritabanı sorgusu' : 'External database query'; ?></option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label"><?php echo $isTr ? 'Veritabanı bağlantısı' : 'Database connection'; ?></label>
+            <?php echo $conn('db_id', $ext['db_id'], false); ?>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="form-label"><?php echo $isTr ? 'Sorgu (sütunlar: phone, name, external_id, notes)' : 'Query (columns: phone, name, external_id, notes)'; ?></label>
+        <textarea name="query_sql" class="form-control u-mono" rows="2" placeholder="SELECT phone, name, id AS external_id FROM leads WHERE called_at IS NULL"><?php echo $h($ext['query_sql']); ?></textarea>
+        <small class="u-hint"><?php echo $isTr ? 'Kampanya başlatılınca okunur. Aynı external_id (yoksa numara) iki kez eklenmez. :campaign kampanya numarasıdır.' : 'Read when the campaign starts. The same external_id (else number) is never added twice. :campaign is the campaign id.'; ?></small>
+    </div>
+    <div class="form-group">
+        <label class="form-label"><?php echo $isTr ? 'Çalışırken yeniden oku (dakika, 0 = yalnız başlatırken)' : 'Read again while running (minutes, 0 = only at start)'; ?></label>
+        <input type="number" name="refresh_min" class="form-control u-maxw-200" min="0" max="1440" value="<?php echo (int)$ext['refresh_min']; ?>">
+    </div>
+    <div class="u-grid-2">
+        <div class="form-group">
+            <label class="form-label"><?php echo $isTr ? 'Yönetebilecek kullanıcılar' : 'Users who manage it'; ?></label>
+            <select name="manager_users[]" class="form-control" multiple size="4">
+                <?php foreach ($adUsers as $u): ?>
+                    <option value="<?php echo (int)$u['id']; ?>" <?php echo in_array((string)$u['id'], $mu, true) ? 'selected' : ''; ?>><?php echo $h(($u['full_name'] ?: $u['username'])); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label"><?php echo $isTr ? 'Yönetebilecek roller' : 'Roles that manage it'; ?></label>
+            <select name="manager_roles[]" class="form-control" multiple size="4">
+                <?php foreach ($adRoles as $r): ?>
+                    <option value="<?php echo $h($r); ?>" <?php echo in_array((string)$r, $mr, true) ? 'selected' : ''; ?>><?php echo $h($r); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <small class="u-hint"><?php echo $isTr ? 'Seçilenler kampanyayı Uygulamalar → Kampanyalar\'dan görür, başlatır, duraklatır ve sonuçlarını indirir. Yönetici her zaman görür.' : 'They see, start, pause and download it under Apps → Campaigns. Administrators always see it.'; ?></small>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="u-check-label">
+            <input type="checkbox" name="webhook" value="1" class="u-check" <?php echo !empty($ext['webhook']) ? 'checked' : ''; ?>>
+            <span><?php echo $isTr ? 'Her sonucu webhook olarak gönder (autodial.result; Bağlantılar / n8n / CRM)' : 'Send each result as a webhook (autodial.result; Connections / n8n / CRM)'; ?></span>
+        </label>
+    </div>
+    <div class="u-grid-2">
+        <div class="form-group">
+            <label class="form-label"><?php echo $isTr ? 'Sonucu geri yaz: bağlantı (yazma izni olanlar)' : 'Write the result back: connection (writable ones)'; ?></label>
+            <?php echo $conn('writeback_db_id', $ext['writeback_db_id'], true); ?>
+        </div>
+        <div class="form-group">
+            <label class="form-label"><?php echo $isTr ? 'Geri yazma şablonu (tek INSERT/UPDATE)' : 'Write-back template (one INSERT/UPDATE)'; ?></label>
+            <textarea name="writeback_sql" class="form-control u-mono" rows="2" placeholder="UPDATE leads SET result = :result, called_at = :called_at WHERE id = :external_id"><?php echo $h($ext['writeback_sql']); ?></textarea>
+            <small class="u-hint">:result :attempts :duration :amd :agent :called_at :campaign :phone :name :external_id</small>
+        </div>
+    </div>
+    <?php return (string)ob_get_clean();
+};
 $campaignNumbers = $selectedCampaign ? AutoDialerService::listNumbers($selectedCampId, 300) : [];
 
 // Load destination options from PBX tables
@@ -84,6 +187,7 @@ try {
 $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
 ?>
 
+<?php if (!$adManagerView): ?>
 <div class="alert alert-info u-mb-20" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
     <div>
         <i class="fas fa-robot"></i>
@@ -199,6 +303,8 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
             <textarea name="numbers_bulk" class="form-control" rows="4" placeholder="05321112233, Ahmet Yılmaz, Ekim Faturası&#10;05442223344, Ayşe Demir, Randevu Teyit"></textarea>
         </div>
 
+        <?php echo $adExtFields(AutoDialerService::campaignExt(0)); ?>
+
         <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-plus"></i> <?php echo $isTr ? 'Kampanyayı Oluştur' : 'Create Campaign'; ?>
@@ -206,6 +312,8 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
         </div>
     </form>
 </div>
+
+<?php endif; ?>
 
 <!-- Campaigns List Table -->
 <div class="card u-mb-20">
@@ -243,7 +351,7 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                         <tr <?php echo $cid === $selectedCampId ? 'style="background: var(--bg-hover, rgba(2,132,199,0.08));"' : ''; ?>>
                             <td><strong>#<?php echo $cid; ?></strong></td>
                             <td>
-                                <a href="/plugins/auto-dialer?campaign_id=<?php echo $cid; ?>" style="font-weight: 600;">
+                                <a href="<?php echo $adBase; ?>?campaign_id=<?php echo $cid; ?>" style="font-weight: 600;">
                                     <?php echo $h($c['name']); ?>
                                 </a>
                                 <div class="text-muted u-fs-11">
@@ -295,13 +403,16 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                                         <?php endif; ?>
                                     </form>
 
-                                    <a href="/plugins/auto-dialer?campaign_id=<?php echo $cid; ?>" class="btn btn-secondary btn-sm" title="<?php echo $isTr ? 'Numaralar & Sonuçlar' : 'Numbers & Results'; ?>">
+                                    <a href="<?php echo $adBase; ?>?campaign_id=<?php echo $cid; ?>" class="btn btn-secondary btn-sm" title="<?php echo $isTr ? 'Numaralar & Sonuçlar' : 'Numbers & Results'; ?>">
                                         <i class="fas fa-list-ol"></i>
                                     </a>
 
-                                    <a href="/plugins/auto-dialer?export_csv=<?php echo $cid; ?>" class="btn btn-secondary btn-sm" title="CSV İndir">
-                                        <i class="fas fa-file-csv"></i>
-                                    </a>
+                                    <form method="POST" style="margin: 0;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
+                                        <input type="hidden" name="autodial_action" value="export_csv">
+                                        <input type="hidden" name="campaign_id" value="<?php echo $cid; ?>">
+                                        <button type="submit" class="btn btn-secondary btn-sm" title="CSV"><i class="fas fa-file-csv"></i></button>
+                                    </form>
 
                                     <form method="POST" style="margin: 0;">
                                         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
@@ -313,6 +424,7 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                                         </button>
                                     </form>
 
+                                    <?php if (!$adManagerView): ?>
                                     <form method="POST" style="margin: 0;" onsubmit="return confirm('<?php echo $isTr ? 'Kampanya ve tüm arama kayıtları silinsin mi?' : 'Delete campaign and all its numbers?'; ?>');">
                                         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
                                         <input type="hidden" name="autodial_action" value="delete_campaign">
@@ -321,6 +433,7 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -341,12 +454,44 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
             <strong>#<?php echo (int)$selectedCampaign['id']; ?> — <?php echo $h($selectedCampaign['name']); ?></strong>
         </div>
         <div style="display: flex; gap: 8px;">
-            <a href="/plugins/auto-dialer?export_csv=<?php echo (int)$selectedCampaign['id']; ?>" class="btn btn-secondary btn-sm">
-                <i class="fas fa-download"></i> <?php echo $isTr ? 'Sonuçları CSV İndir' : 'Export Results CSV'; ?>
-            </a>
+            <?php if ($selectedExt['source_type'] === 'db'): ?>
+                <form method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
+                    <input type="hidden" name="autodial_action" value="import_db">
+                    <input type="hidden" name="campaign_id" value="<?php echo (int)$selectedCampaign['id']; ?>">
+                    <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-database"></i> <?php echo $isTr ? 'Kaynağı şimdi oku' : 'Read the source now'; ?></button>
+                </form>
+            <?php endif; ?>
+            <form method="POST" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
+                <input type="hidden" name="autodial_action" value="export_csv">
+                <input type="hidden" name="campaign_id" value="<?php echo (int)$selectedCampaign['id']; ?>">
+                <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> <?php echo $isTr ? 'Sonuçları CSV İndir' : 'Export Results CSV'; ?></button>
+            </form>
         </div>
     </div>
 
+    <?php if ($selectedExt['source_type'] === 'db'): ?>
+        <div class="u-p-12 u-fs-12">
+            <i class="fas fa-database"></i>
+            <?php echo $isTr ? 'Son okuma:' : 'Last read:'; ?> <?php echo $h($selectedExt['last_refresh_at'] ?? '—'); ?>
+            <?php if ((string)$selectedExt['last_error'] !== ''): ?>
+                <span class="badge badge-danger"><?php echo $h($selectedExt['last_error']); ?></span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+    <?php if (!$adManagerView): ?>
+        <details class="u-p-12">
+            <summary class="u-fw-700"><i class="fas fa-sliders u-primary"></i> <?php echo $isTr ? 'Kaynak, yöneticiler ve sonuçlar' : 'Source, managers and results'; ?></summary>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
+                <input type="hidden" name="autodial_action" value="save_campaign_ext">
+                <input type="hidden" name="campaign_id" value="<?php echo (int)$selectedCampaign['id']; ?>">
+                <?php echo $adExtFields($selectedExt); ?>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> <?php echo $isTr ? 'Kaydet' : 'Save'; ?></button>
+            </form>
+        </details>
+    <?php endif; ?>
     <form method="POST" enctype="multipart/form-data" style="padding: 16px 20px; border-bottom: 1px solid var(--border-color);">
         <input type="hidden" name="csrf_token" value="<?php echo $h($csrf_token); ?>">
         <input type="hidden" name="autodial_action" value="add_numbers">
@@ -381,13 +526,14 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                     <th><?php echo $isTr ? 'Çağrı Sonucu' : 'Call Result'; ?></th>
                     <th><?php echo $isTr ? 'AMD Sonucu' : 'AMD Status'; ?></th>
                     <th><?php echo $isTr ? 'AMD Nedeni' : 'AMD Cause'; ?></th>
+                    <th><?php echo $isTr ? 'Temsilci' : 'Agent'; ?></th>
                     <th><?php echo $isTr ? 'Süre (sn)' : 'Duration (s)'; ?></th>
                     <th><?php echo $isTr ? 'Son Deneme' : 'Last Attempt'; ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($campaignNumbers)): ?>
-                    <?php echo uiTableEmptyRow(10, $isTr ? 'Bu kampanyada henüz numara yok.' : 'No numbers in this campaign yet.', 'fa-list'); ?>
+                    <?php echo uiTableEmptyRow(11, $isTr ? 'Bu kampanyada henüz numara yok.' : 'No numbers in this campaign yet.', 'fa-list'); ?>
                 <?php else: ?>
                     <?php foreach ($campaignNumbers as $n): ?>
                         <?php
@@ -398,7 +544,11 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                         ?>
                         <tr>
                             <td>#<?php echo (int)$n['id']; ?></td>
-                            <td><strong><code><?php echo $h($n['phone_number']); ?></code></strong></td>
+                            <td>
+                                <strong><code><?php echo $h($n['phone_number']); ?></code></strong>
+                                <?php if ($n['external_id'] !== ''): ?><div class="text-muted u-fs-11">ID <?php echo $h($n['external_id']); ?></div><?php endif; ?>
+                                <?php if ($n['report_error'] !== ''): ?><div class="u-fs-11 u-danger" title="<?php echo $h($n['report_error']); ?>"><i class="fas fa-triangle-exclamation"></i> <?php echo $isTr ? 'Geri yazılamadı' : 'Write-back failed'; ?></div><?php endif; ?>
+                            </td>
                             <td>
                                 <?php echo $h($n['contact_name']); ?>
                                 <?php if (!empty($n['notes'])): ?>
@@ -416,6 +566,7 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                                 <?php endif; ?>
                             </td>
                             <td class="u-fs-11"><code><?php echo $h($n['amd_cause'] ?: '—'); ?></code></td>
+                            <td><?php echo $h($n['agent'] ?: '—'); ?></td>
                             <td><?php echo (int)$n['duration']; ?>s</td>
                             <td class="u-fs-12"><?php echo $h($n['last_attempt_at'] ?: '—'); ?></td>
                         </tr>

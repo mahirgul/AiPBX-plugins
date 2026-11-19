@@ -37,3 +37,35 @@ CREATE TABLE IF NOT EXISTS `plg_autodial_numbers` (
     INDEX `idx_camp_status` (`campaign_id`, `status`, `next_attempt_at`),
     INDEX `idx_phone` (`phone_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 1.3.0: number source, managers and result delivery of a campaign (a table of its own:
+-- plugin schemas may only CREATE, so existing installs get the new fields this way).
+CREATE TABLE IF NOT EXISTS `plg_autodial_campaign_ext` (
+    `campaign_id` INT PRIMARY KEY,
+    `owner_user_id` INT DEFAULT NULL,
+    `manager_users` VARCHAR(500) NOT NULL DEFAULT '',
+    `manager_roles` VARCHAR(500) NOT NULL DEFAULT '',
+    `source_type` VARCHAR(10) NOT NULL DEFAULT 'text',
+    `db_id` INT DEFAULT NULL,
+    `query_sql` TEXT NULL,
+    `refresh_min` INT NOT NULL DEFAULT 0,
+    `last_refresh_at` DATETIME DEFAULT NULL,
+    `last_error` VARCHAR(255) NOT NULL DEFAULT '',
+    `webhook` TINYINT(1) NOT NULL DEFAULT 1,
+    `writeback_db_id` INT DEFAULT NULL,
+    `writeback_sql` TEXT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 1.3.0: per number: its key for duplicates (external_id, else the number), the agent
+-- who took the call, and whether its result was delivered (webhook, write-back).
+CREATE TABLE IF NOT EXISTS `plg_autodial_number_ext` (
+    `number_id` BIGINT PRIMARY KEY,
+    `campaign_id` INT NOT NULL,
+    `ext_key` VARCHAR(120) NOT NULL,
+    `external_id` VARCHAR(120) NOT NULL DEFAULT '',
+    `agent` VARCHAR(40) NOT NULL DEFAULT '',
+    `reported` TINYINT(1) NOT NULL DEFAULT 0,
+    `report_error` VARCHAR(255) NOT NULL DEFAULT '',
+    UNIQUE KEY `uniq_campaign_key` (`campaign_id`, `ext_key`),
+    INDEX `idx_reported` (`reported`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

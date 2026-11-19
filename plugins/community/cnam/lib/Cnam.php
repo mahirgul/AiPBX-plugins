@@ -201,9 +201,10 @@ final class Cnam
         }
 
         // 2. Cache
+        $cacheNumber = CnamProvider::e164($number);
         $cacheDays = isset($settings['cache_days']) ? (int) $settings['cache_days'] : 30;
         if ($cacheDays > 0) {
-            $cached = self::getCache($db, $number);
+            $cached = self::getCache($db, $cacheNumber);
             if ($cached !== null) {
                 $ms = (int) ((hrtime(true) - $start) / 1e6);
                 return ['name' => $cached, 'source' => 'cache', 'latency_ms' => $ms];
@@ -222,7 +223,7 @@ final class Cnam
             $name = $p->lookup($number);
             if ($name !== null) {
                 if ($cacheDays > 0) {
-                    self::setCache($db, $number, $name, $providerId, $cacheDays);
+                    self::setCache($db, $cacheNumber, $name, $providerId, $cacheDays);
                 }
                 $ms = (int) ((hrtime(true) - $start) / 1e6);
                 return ['name' => $name, 'source' => $providerId, 'latency_ms' => $ms];

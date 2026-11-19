@@ -78,7 +78,7 @@ final class LdapSync
             return null;
         }
         $id = $idAttr !== '' ? $first($idAttr) : '';
-        if ($id !== '' && !mb_check_encoding($id, 'UTF-8')) {
+        if ($id !== '' && ($idAttr === 'objectguid' || !mb_check_encoding($id, 'UTF-8'))) {
             $id = bin2hex($id); // objectGUID is binary
         }
         $id = $id !== '' ? $id : strtolower((string) ($entry['dn'] ?? ''));
@@ -177,7 +177,6 @@ final class LdapSync
         $security = (string) ($s['security'] ?? 'ldaps');
         $port = (int) ($s['port'] ?? 0) ?: ($security === 'ldaps' ? 636 : 389);
         // Certificate check: on unless turned off for a test directory.
-        ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, empty($s['skip_cert_check']) ? LDAP_OPT_X_TLS_DEMAND : LDAP_OPT_X_TLS_NEVER);
         $conn = ldap_connect(($security === 'ldaps' ? 'ldaps://' : 'ldap://') . $host . ':' . $port);
         if (!$conn) {
             throw new RuntimeException('The directory address is not valid.');
@@ -187,6 +186,12 @@ final class LdapSync
         ldap_set_option($conn, LDAP_OPT_NETWORK_TIMEOUT, 10);
         ldap_set_option($conn, LDAP_OPT_TIMELIMIT, 60);
         try {
+            if (in_array($security, ['ldaps', 'starttls'], true)) {
+                $verify = empty($s['skip_cert_check']) ? LDAP_OPT_X_TLS_DEMAND : LDAP_OPT_X_TLS_NEVER;
+                if (!ldap_set_option($conn, LDAP_OPT_X_TLS_REQUIRE_CERT, $verify)) {
+                    throw new RuntimeException('Could not set certificate verification for the directory connection.');
+                }
+            }
             if ($security === 'starttls' && !@ldap_start_tls($conn)) {
                 throw new RuntimeException('StartTLS failed: ' . ldap_error($conn));
             }

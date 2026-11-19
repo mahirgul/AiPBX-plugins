@@ -147,7 +147,7 @@ final class Sms
             try {
                 $find->execute([$m['to'], $provider::id()]);
                 $numberId = (int) $find->fetchColumn();
-                if ($numberId === 0 || $m['from'] === '') {
+                if ($numberId === 0 || $m['from'] === '' || strlen($m['from']) > 32) {
                     $db->rollBack();
                     continue;
                 }

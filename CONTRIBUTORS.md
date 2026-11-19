@@ -11,9 +11,7 @@ We thank all the developers and contributors who have built and extended plugins
 
 ### Plugin Contributors
 
-| Contributor | GitHub | Contributed Plugins |
-| :--- | :--- | :--- |
-| **Gregory Merriweather** | [@shido6](https://github.com/shido6) | `ai-assistant`; signaling capture and call quality (now part of AiPBX) |
+No outside plugin contributions yet.
 
 ---
 

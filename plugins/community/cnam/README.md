@@ -31,3 +31,9 @@ Configure your provider API key under **Settings → Plugins → Caller Name (CN
 Fix SignalWire lookup parsing to read the documented `cnam.caller_id` response field.
 
 Asterisk requests use HTTP Basic credentials on loopback and clear the scalar `userpwd` option afterward. Secret custom HTTP headers are not generated because Asterisk accumulates `httpheader` values. Existing custom-token headers remain accepted for compatibility.
+
+### 1.1.2
+
+- One cache entry per number, whatever format the number came in.
+- The generated dialplan no longer sets `CURLOPT(httpauth)`, which Asterisk 22 does not know: every lookup
+  logged `ERROR func_curl.c: Unrecognized option: httpauth`. `userpwd` alone already sends HTTP Basic.

@@ -26,8 +26,7 @@ return static function (string $slug, array $settings): void {
         $conf .= " same => n,GotoIf(\$[\"\${CALLERID(name)}\" != \"\" & \"\${CALLERID(name)}\" != \"\${CALLERID(num)}\"]?done)\n";
     }
 
-    $conf .= " same => n,Set(CURLOPT(httpauth)=basic)\n"
-        . " same => n,Set(CURLOPT(userpwd)=cnam:{$token})\n"
+    $conf .= " same => n,Set(CURLOPT(userpwd)=cnam:{$token})\n"
         . " same => n,Set(CURLOPT(conntimeout)={$timeout})\n"
         . " same => n,Set(CURLOPT(httptimeout)={$timeout})\n"
         . " same => n,Set(LOCAL(cname)=\${CURL(http://127.0.0.1/api/plugins/cnam/lookup?num=\${LOCAL(cnum)})})\n"

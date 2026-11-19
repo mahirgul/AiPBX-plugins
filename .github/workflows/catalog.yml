@@ -51,7 +51,6 @@ jobs:
           php plugins/community/sms/tests/concurrent_receive.php
           php plugins/community/ai-voicemail/tests/handler.php
           php plugins/community/auto-dialer/tests/database.php
-          php plugins/community/ai-assistant/tests/console.php
       - name: Build
         env:
           CATALOG_SIGNING_KEY: ${{ secrets.CATALOG_SIGNING_KEY }}

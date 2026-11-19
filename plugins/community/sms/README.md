@@ -99,3 +99,7 @@ retries. Older installations can update through the community catalog.
 
 Adds the Send pending state and repeated-submission guard described above. Provider and attachment
 security tests remain applicable; the change does not add carrier delivery receipts or alter the schema.
+
+### 1.2.3
+
+An incoming message whose sender is longer than 32 characters is skipped instead of failing the batch.

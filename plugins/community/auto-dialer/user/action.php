@@ -12,7 +12,11 @@ return static function (string $slug, array $settings, array $user) use ($adminA
     if (!in_array($action, ['set_status', 'add_numbers', 'reset_numbers', 'import_db', 'export_csv'], true)) {
         return [];
     }
-    if (!AutoDialerService::canManage((int)($_POST['campaign_id'] ?? 0), $user)) {
+    $campaignId = (int)($_POST['campaign_id'] ?? 0);
+    if ($action === 'export_csv' && isset($_GET['export_csv']) && (int)$_GET['export_csv'] !== $campaignId) {
+        return ['error' => t('auth.forbidden')];
+    }
+    if (!AutoDialerService::canManage($campaignId, $user)) {
         return ['error' => t('auth.forbidden')];
     }
     return $adminAction($slug, $settings);

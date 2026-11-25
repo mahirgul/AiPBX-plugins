@@ -9,7 +9,10 @@ return static function (string $slug, array $settings): array {
     $isTr = (function_exists('getUserLanguage') && getUserLanguage() === 'tr');
 
     // CSV Export download (`GET /plugins/auto-dialer?export_csv=<id>`, or POST export_csv from /apps/auto-dialer)
-    $exportId = (int)($_GET['export_csv'] ?? (($_POST['autodial_action'] ?? '') === 'export_csv' ? ($_POST['campaign_id'] ?? 0) : 0));
+    $isPost = (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST');
+    $exportId = $isPost
+        ? (($_POST['autodial_action'] ?? '') === 'export_csv' ? (int)($_POST['campaign_id'] ?? 0) : 0)
+        : (int)($_GET['export_csv'] ?? 0);
     if ($exportId > 0) {
         $campId = $exportId;
         $camp = AutoDialerService::getCampaign($campId);

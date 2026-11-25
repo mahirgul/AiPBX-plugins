@@ -1,11 +1,11 @@
 {
     "slug": "auto-dialer",
-    "name": "Auto Dialer & AMD Campaigns",
+    "name": "Auto Dialer",
     "name_i18n": {
-        "tr": "Otomatik Dış Arama (Auto Dialer & AMD)",
-        "en": "Auto Dialer & AMD Campaigns"
+        "tr": "Otomatik Arama",
+        "en": "Auto Dialer"
     },
-    "version": "1.3.1",
+    "version": "1.3.2",
     "author": "AiPBX Official Team",
     "category": "integration",
     "icon": "fas fa-phone-volume",

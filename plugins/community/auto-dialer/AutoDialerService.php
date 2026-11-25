@@ -449,7 +449,10 @@ final class AutoDialerService
                 $remStmt = $db->prepare("SELECT COUNT(*) FROM plg_autodial_numbers WHERE campaign_id = ? AND status IN ('pending', 'dialing', 'answered')");
                 $remStmt->execute([$campId]);
                 if ((int)$remStmt->fetchColumn() === 0) {
-                    $db->prepare("UPDATE plg_autodial_campaigns SET status = 'completed' WHERE id = ?")->execute([$campId]);
+                    $source = self::campaignExt($campId);
+                    if ($source['source_type'] !== 'db' || $source['refresh_min'] <= 0) {
+                        $db->prepare("UPDATE plg_autodial_campaigns SET status = 'completed' WHERE id = ? AND status = 'running'")->execute([$campId]);
+                    }
                 }
                 continue;
             }
@@ -477,7 +480,8 @@ final class AutoDialerService
                 $ok = self::originate(
                     sprintf('Local/dial_%d_%s_%d_%d@aipbx-autodial-out/n', $numId, $phone, $campId, $attempt),
                     'aipbx-autodial-amd',
-                    sprintf('route_%d_%d_%d_%s', $campId, $numId, $attempt, $phone)
+                    sprintf('route_%d_%d_%d_%s', $campId, $numId, $attempt, $phone),
+                    $dialTimeoutSec
                 );
                 if ($ok) {
                     $originatedTotal++;
@@ -504,7 +508,7 @@ final class AutoDialerService
      * Starts one campaign call over AMI. The portal user may not run "channel originate" on the
      * Asterisk CLI (cli_permissions.conf), so the worker, which runs as www-data, could not dial.
      */
-    private static function originate(string $channel, string $context, string $exten): bool
+    private static function originate(string $channel, string $context, string $exten, int $dialTimeoutSec): bool
     {
         if (self::$originator !== null) {
             return (bool)(self::$originator)($channel, $context, $exten);
@@ -534,8 +538,9 @@ final class AutoDialerService
         fwrite($fp, "Action: Login\r\nUsername: " . AMI_USER . "\r\nSecret: " . AMI_PASS . "\r\nEvents: off\r\n\r\n");
         $ok = str_contains($read(), 'Response: Success');
         if ($ok) {
+            $timeoutMs = ($dialTimeoutSec + 5) * 1000;
             fwrite($fp, "Action: Originate\r\nChannel: {$channel}\r\nContext: {$context}\r\nExten: {$exten}\r\n"
-                . "Priority: 1\r\nTimeout: 45000\r\nAsync: true\r\n\r\n");
+                . "Priority: 1\r\nTimeout: {$timeoutMs}\r\nAsync: true\r\n\r\n");
             $ok = str_contains($read(), 'Response: Success');
             fwrite($fp, "Action: Logoff\r\n\r\n");
         }

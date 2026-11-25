@@ -86,6 +86,11 @@ Numbers added before 1.3.0 are not reported, so an upgrade sends no old results.
 
 ---
 
+### 1.3.2
+
+- Shorter name: "Auto Dialer" ("Otomatik Arama" in Turkish), one language per menu entry.
+- Campaign calls use the configured dial timeout. Database campaigns with recurring refresh stay active between imports.
+
 ### 1.3.1
 
 - **Campaigns dial again.** The worker runs as `www-data`, and the Asterisk CLI does not let that user run

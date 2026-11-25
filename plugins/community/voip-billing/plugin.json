@@ -1,0 +1,97 @@
+{
+    "slug": "voip-billing",
+    "name": "VoIP Billing",
+    "name_i18n": {
+        "en": "VoIP Billing",
+        "tr": "VoIP Faturalama"
+    },
+    "version": "1.0.0",
+    "requires_aipbx": "1.71.0",
+    "author": "AiPBX community",
+    "author_url": "https://github.com/mahirgul/aipbx-plugins/tree/main/plugins/community/voip-billing",
+    "type": "community",
+    "category": "integration",
+    "icon": "fas fa-file-invoice-dollar",
+    "icon_style": "color: #0ea5e9;",
+    "description": "Multi-account VoIP call billing and draft invoice creation (ClientFence) from outbound CDRs using extension mappings and prefix rates.",
+    "description_i18n": {
+        "en": "Multi-account VoIP call billing and draft invoice creation (ClientFence) from outbound CDRs using extension mappings and prefix rates.",
+        "tr": "Dahili eşleştirmeleri ve ön ek tarifeleri kullanarak giden çağrı kayıtlarından (CDR) çoklu hesap VoIP ücretlendirme ve taslak fatura (ClientFence) oluşturma."
+    },
+    "tables": [
+        "plg_billing_providers",
+        "plg_billing_customers",
+        "plg_billing_rates",
+        "plg_billing_invoices",
+        "plg_billing_calls"
+    ],
+    "scopes": [],
+    "hooks": {
+        "admin_page": {
+            "group": "integrations"
+        }
+    },
+    "settings_schema": [
+        {
+            "key": "default_currency",
+            "type": "text",
+            "default": "USD",
+            "placeholder": "USD",
+            "label": "Default currency",
+            "label_i18n": {
+                "en": "Default currency",
+                "tr": "Varsayılan para birimi"
+            },
+            "help": "Three-letter currency code displayed on invoice summaries (ClientFence uses the client's configured currency).",
+            "help_i18n": {
+                "en": "Three-letter currency code displayed on invoice summaries (ClientFence uses the client's configured currency).",
+                "tr": "Fatura özetlerinde gösterilen üç harfli para birimi kodu (ClientFence müşterinin tanımlı para birimini kullanır)."
+            }
+        },
+        {
+            "key": "default_rate_per_minute",
+            "type": "text",
+            "default": "0.05",
+            "placeholder": "0.05",
+            "label": "Default rate per minute",
+            "label_i18n": {
+                "en": "Default rate per minute",
+                "tr": "Varsayılan dakika ücreti"
+            },
+            "help": "Fallback per-minute rate when neither a destination prefix rate nor a customer override matches.",
+            "help_i18n": {
+                "en": "Fallback per-minute rate when neither a destination prefix rate nor a customer override matches.",
+                "tr": "Hedef ön eki veya müşteri özel tarifesi eşleşmediğinde kullanılacak dakika ücreti."
+            }
+        },
+        {
+            "key": "billing_increment_seconds",
+            "type": "select",
+            "default": "60",
+            "label": "Billing increment",
+            "label_i18n": {
+                "en": "Billing increment",
+                "tr": "Ücretlendirme periyodu"
+            },
+            "options": {
+                "60": "60/60 (per minute)",
+                "1": "1/1 (per second)"
+            }
+        },
+        {
+            "key": "default_taxed",
+            "type": "boolean",
+            "default": "1",
+            "label": "Tax invoice items by default",
+            "label_i18n": {
+                "en": "Tax invoice items by default",
+                "tr": "Fatura kalemlerini varsayılan olarak vergilendir"
+            },
+            "help": "Applied to draft invoice items unless overridden per customer.",
+            "help_i18n": {
+                "en": "Applied to draft invoice items unless overridden per customer.",
+                "tr": "Müşteri bazında değiştirilmedikçe taslak fatura kalemlerine uygulanır."
+            }
+        }
+    ]
+}

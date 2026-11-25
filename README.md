@@ -16,15 +16,19 @@ Enable them on **Integrations → Plugins** in the portal.
 
 | Plugin | Slug | Category | Type | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **Cloud AI services** | [`ai-cloud`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-cloud) | `ai` | Official | Cloud AI providers in one place: Gemini/Gemma, OpenAI, Azure, Deepgram, ElevenLabs, Amazon Polly, Groq, NVIDIA NIM, Qwen or any OpenAI-compatible service (speech, speech to text, language models). |
-| **Local AI models** | [`ai-models`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-models) | `ai` | Official | AI on the PBX itself, offline: Turkish EMA Lightning and Piper voices, Kokoro English voices, Vosk and Whisper speech recognition. |
-| **Cloud TTS (announcement studio)** | [`ai-tts`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-tts) | `ai` | Official | Text to speech for IVR and queue announcements with cloud or local engines; saves the result as an announcement. |
-| **AI applications** | [`ai-apps`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-apps) | `ai` | Official | AI applications with their own numbers that answer calls, do their job and pass the call on (usable as IVR / route destinations). |
-| **Website call widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | "Call us" buttons for websites over WebRTC, callback form, WordPress plugin. |
-| **Sign in with Google** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Google Workspace / Gmail sign-in (OAuth 2.0) for the portal and the mobile apps. |
-| **OpenID Connect SSO** | [`oidc-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/oidc-auth) | `integration` | Official | Corporate sign-in through an OpenID Connect identity provider. |
-| **SAML SSO** | [`saml-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/saml-auth) | `integration` | Official | Corporate SAML 2.0 sign-in. |
-| **Microsoft Teams** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Direct Routing: AiPBX as the SBC for Microsoft Teams, plus call webhooks. |
+| **Call Analysis** | [`ai-call-analysis`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-call-analysis) | `ai` | Official | Call recording transcription, AI summaries, and automatic quality review (Auto-QA). |
+| **Knowledge Base** | [`ai-knowledge`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-knowledge) | `ai` | Official | Upload TXT documents, index chunks via AI Gateway embeddings, and ground Assistant & Voice Apps answers with role-based access control. |
+| **AI TTS Studio** | [`ai-tts`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-tts) | `ai` | Official | Synthesize natural IVR and queue announcements from text using Cloud TTS or lightweight local TTS engines and save directly to Asterisk sounds. |
+| **Voicemail AI** | [`ai-voicemail`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ai-voicemail) | `ai` | Official | Automatic speech-to-text transcription and one-sentence summaries for voicemail messages. |
+| **Cloud AI** | [`aicloud`](https://github.com/mahirgul/AiPBX/tree/main/plugins/aicloud) | `ai` | Official | Cloud AI provider accounts, models, usage limits, and cloud inference testing. |
+| **Local AI** | [`ailocal`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ailocal) | `ai` | Official | Local AI models, Ollama / local runtime connections, and local inference testing. |
+| **Google Sign-In** | [`google-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/google-auth) | `integration` | Official | Allow portal and mobile users to sign in with their corporate Google Workspace or Gmail accounts via OAuth 2.0. |
+| **Microsoft Sign-In** | [`microsoft-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/microsoft-auth) | `integration` | Official | Allow portal users to sign in with their Microsoft 365, Entra ID (Azure AD), or personal Microsoft accounts via OAuth 2.0. |
+| **Microsoft Teams** | [`ms-teams`](https://github.com/mahirgul/AiPBX/tree/main/plugins/ms-teams) | `integration` | Official | Connect AiPBX as a Session Border Controller (SBC) for Microsoft Teams Direct Routing and send real-time call/fax/voicemail Adaptive Cards to Teams channels. |
+| **OIDC SSO** | [`oidc-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/oidc-auth) | `integration` | Official | Enterprise Single Sign-On (SSO) via OpenID Connect (OIDC) with auto-provisioning for Keycloak, Microsoft Entra ID, Authentik, Okta, and Google Workspace. |
+| **PBX Assistant** | [`pbx-assistant`](https://github.com/mahirgul/AiPBX/tree/main/plugins/pbx-assistant) | `ai` | Official | Experimental. Chat with the PBX: plain-language changes with a preview and undo, read-only reports, shortcuts to pages and settings, and answers from the Knowledge Base. |
+| **SAML 2.0 SSO** | [`saml-auth`](https://github.com/mahirgul/AiPBX/tree/main/plugins/saml-auth) | `integration` | Official | Enterprise Single Sign-On (SSO) via SAML 2.0 with JIT auto-provisioning for Microsoft Entra ID (Azure AD), Okta, Keycloak, Authentik, and ADFS. |
+| **Web Widgets** | [`web-widgets`](https://github.com/mahirgul/AiPBX/tree/main/plugins/web-widgets) | `integration` | Official | Embed click-to-call WebRTC audio buttons and callback forms on any website or WordPress site with origin allowlists and daily rate limits. |
 
 ## 🌐 Community plugins (this repository)
 
@@ -35,6 +39,7 @@ Enable them on **Integrations → Plugins** in the portal.
 | **Caller Name (CNAM)** | [`cnam`](plugins/community/cnam/) | `integration` | Community | Inbound caller-name lookup with local contacts, provider lookup and caching. AiPBX 1.72.12+. |
 | **LDAP / Active Directory contacts** | [`ldap-sync`](plugins/community/ldap-sync/) | `integration` | AiPBX | People of your company directory in the PBX phonebook, for desk phones. AiPBX 1.77.1+. |
 | **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |
+| **VoIP Billing** | [`voip-billing`](plugins/community/voip-billing/) | `integration` | AiPBX | Draft invoices from answered outbound calls through a billing provider (ClientFence first): customer mapping, prefix tariffs, CDR preview and sending. AiPBX 1.71+. |
 | **SMS / MMS** | [`sms`](plugins/community/sms/) | `integration` | Community | Text messages on your numbers through Twilio, Vonage, Plivo, Telnyx, Bandwidth, Sinch, VoIP.ms or BulkVS; the users a number is given to answer them. AiPBX 1.71+. |
 
 **Installing:** on AiPBX 1.72+, tick **Show community plugins from the catalog** on **Integrations → Plugins**

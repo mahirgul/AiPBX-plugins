@@ -59,7 +59,7 @@ $ai=AutoDialerService::createCampaign(['name'=>'Confirm','dest_type'=>'ai_app','
 AutoDialerService::syncDialplan();
 check(str_contains($generatedDialplan,'ExecIf($["${AUTODIAL_PHONE}" != ""]?Set(CALLERID(num)=${AUTODIAL_PHONE}))'),'AI destination does not see the person called');
 check(str_contains($generatedDialplan,'&ai=${FILTER(a-z0-9_-,${AI_INTENT})}'),'AI result not reported');
-check(in_array('ai_agent',AutoDialerService::ALLOWED_DEST_TYPES,true),'External agent not a campaign destination');
+check(!in_array('ai_agent',AutoDialerService::ALLOWED_DEST_TYPES,true),'removed external agents are no campaign destination');
 $testDB->exec("UPDATE plg_autodial_campaigns SET status='paused'");
 AutoDialerService::setCampaignStatus($ai,'running');
 AutoDialerService::tickCampaigns();

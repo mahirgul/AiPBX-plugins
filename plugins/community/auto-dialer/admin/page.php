@@ -126,7 +126,6 @@ $destOptions = [
     'ring_group'   => [],
     'announcement' => [],
     'ai_app'       => [],
-    'ai_agent'     => [],
 ];
 
 try {
@@ -162,13 +161,6 @@ try {
 try {
     foreach ($db->query("SELECT id, title, internal_number FROM pbx_ai_apps ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC) ?: [] as $ai) {
         $destOptions['ai_app'][] = ['id' => (string)$ai['id'], 'label' => $ai['title'] . (!empty($ai['internal_number']) ? ' (' . $ai['internal_number'] . ')' : '')];
-    }
-} catch (\Throwable $e) {
-}
-try {
-    // AI → External agents (AiPBX 1.80+): absent on older cores.
-    foreach ($db->query("SELECT id, title FROM pbx_ai_agents WHERE is_active = 1 ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC) ?: [] as $ag) {
-        $destOptions['ai_agent'][] = ['id' => (string)$ag['id'], 'label' => (string)$ag['title']];
     }
 } catch (\Throwable $e) {
 }
@@ -238,7 +230,6 @@ $amdArgsPreview = AsteriskSettingsService::amdDialplanArgs();
                     <option value="ring_group"><?php echo $isTr ? 'Çağrı Grubu (Ring Group)' : 'Ring Group'; ?></option>
                     <option value="announcement"><?php echo $isTr ? 'Anons (Announcement)' : 'Announcement'; ?></option>
                     <option value="ai_app"><?php echo $isTr ? 'AI Uygulaması (Sesli Bot)' : 'AI Application'; ?></option>
-                    <option value="ai_agent"><?php echo $isTr ? 'Dış AI Asistanı (SIP)' : 'External AI Agent'; ?></option>
                 </select>
             </div>
 

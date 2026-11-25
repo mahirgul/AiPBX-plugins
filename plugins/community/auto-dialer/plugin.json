@@ -5,7 +5,7 @@
         "tr": "Otomatik Arama",
         "en": "Auto Dialer"
     },
-    "version": "1.3.2",
+    "version": "1.3.3",
     "author": "AiPBX Official Team",
     "category": "integration",
     "icon": "fas fa-phone-volume",

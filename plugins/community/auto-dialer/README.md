@@ -86,6 +86,10 @@ Numbers added before 1.3.0 are not reported, so an upgrade sends no old results.
 
 ---
 
+### 1.3.3
+
+- The External AI Agent destination is gone with AiPBX 1.82, which removed external agents.
+
 ### 1.3.2
 
 - Shorter name: "Auto Dialer" ("Otomatik Arama" in Turkish), one language per menu entry.
@@ -123,12 +127,11 @@ When a campaign's target destination is a **Call Queue (`queue`)** and **Queue F
 
 ## AI campaigns
 
-With an **AI Application** or an **External AI Agent** (AiPBX 1.80+) as the destination, the AI talks
+With an **AI Application** as the destination, the AI talks
 with the person called: an appointment confirmation, a payment reminder, a short survey.
 
 - The AI sees the **person called** as the caller: an AI application's lookup address gets their
-  number (`caller=`) and can answer with their name, appointment or balance; an external agent gets
-  it as `X-AiPBX-Caller`.
+  number (`caller=`) and can answer with their name, appointment or balance.
 - What a voice-requests application understood is stored as the number's result: `AI:<request id>`
   (for example `AI:confirm`), `AI:none` when it understood nothing, `AI:ended` when a conversation
   said goodbye. It shows in the number list and the export like any other result.

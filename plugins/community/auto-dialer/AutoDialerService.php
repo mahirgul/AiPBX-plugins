@@ -24,11 +24,10 @@ final class AutoDialerService
         'ring_group',
         'announcement',
         'ai_app',
-        'ai_agent',
     ];
 
     /** Destinations where AI talks with the person called: it should know who that is. */
-    public const AI_DEST_TYPES = ['ai_app', 'ai_agent'];
+    public const AI_DEST_TYPES = ['ai_app'];
 
     /**
      * Ensure the plugin's `plg_*` tables exist.

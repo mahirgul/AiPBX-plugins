@@ -49,7 +49,6 @@ jobs:
           php plugins/community/sms/tests/media_security.php
           php plugins/community/sms/tests/receive.php
           php plugins/community/sms/tests/concurrent_receive.php
-          php plugins/community/ai-voicemail/tests/handler.php
           php plugins/community/auto-dialer/tests/database.php
       - name: Build
         env:

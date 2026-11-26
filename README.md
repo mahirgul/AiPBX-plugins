@@ -35,7 +35,6 @@ Enable them on **Integrations → Plugins** in the portal.
 | Plugin | Slug | Category | Author | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **Auto Dialer & AMD Campaigns** | [`auto-dialer`](plugins/community/auto-dialer/) | `integration` | AiPBX | Outbound campaigns, AMD and queue pacing. AiPBX 1.72.12+. |
-| **AI Voicemail** | [`ai-voicemail`](plugins/community/ai-voicemail/) | `ai` | AiPBX | Summaries and transcripts of completed voicemail transcriptions. AiPBX 1.72.12+. |
 | **Caller Name (CNAM)** | [`cnam`](plugins/community/cnam/) | `integration` | Community | Inbound caller-name lookup with local contacts, provider lookup and caching. AiPBX 1.72.12+. |
 | **LDAP / Active Directory contacts** | [`ldap-sync`](plugins/community/ldap-sync/) | `integration` | AiPBX | People of your company directory in the PBX phonebook, for desk phones. AiPBX 1.77.1+. |
 | **SIP Provider Templates** | [`provider-templates`](plugins/community/provider-templates/) | `integration` | Community | Create a SIP trunk from a provider template. Adding a provider takes one small file, no code. |

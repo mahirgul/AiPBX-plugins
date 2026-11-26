@@ -71,10 +71,7 @@ does not touch calls: copy it, change the slug and delete what you do not need.
 2. In the AiPBX portal open **Integrations → Plugins → Upload Custom Plugin (`.zip`)**, upload it and click **Enable**.
    Uploading needs AiPBX **1.50.3** or newer; older versions fail with *"Failed to move extracted plugin"*.
 
-Uploaded plugins are stored in `/var/lib/aipbx/plugins/` and survive core updates. Core 1.73+ moves
-previously bundled Auto Dialer, AI Assistant and AI Voicemail copies there using offline transition
-packages, preserving their state and settings. Fresh PBX installs obtain these plugins from this
-catalog. Respect the `requires_aipbx` in each plugin manifest; the upload feature's minimum version
+Uploaded plugins are stored in `/var/lib/aipbx/plugins/` and survive core updates. Respect the `requires_aipbx` in each plugin manifest; the upload feature's minimum version
 is not the minimum supported core version of every plugin.
 **Keep plugin installations out of `/opt/aipbx`:** it is the managed PBX checkout. Use the catalog or
 ZIP installer so plugin code stays in `/var/lib/aipbx/plugins` and core updates can manage their own files.

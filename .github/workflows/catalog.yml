@@ -62,3 +62,8 @@ jobs:
           gh release view catalog >/dev/null 2>&1 || gh release create catalog --title "Community plugin catalog" \
             --notes "Built by CI from plugins/community: one .zip per plugin, catalog.json and its signature. AiPBX installs from here." --latest=false
           gh release upload catalog dist/* --clobber
+          for asset in $(gh release view catalog --json assets --jq '.assets[].name'); do
+            if [ ! -f "dist/$asset" ]; then
+              gh release delete-asset catalog "$asset" --yes
+            fi
+          done
